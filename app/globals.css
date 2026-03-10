@@ -1,0 +1,297 @@
+@import "tailwindcss";
+
+:root {
+  /* Brand Colors */
+  --color-primary: #1c5244;
+  --color-secondary: #333333;
+  --color-accent: #f8ab1d;
+
+  /* Extended Palette */
+  --color-primary-light: #2a7561;
+  --color-primary-dark: #143d33;
+  --color-accent-light: #fabe4d;
+  --color-accent-dark: #d99310;
+
+  /* Neutrals */
+  --color-white: #ffffff;
+  --color-off-white: #f8f9fa;
+  --color-light-gray: #e9ecef;
+  --color-gray: #6c757d;
+  --color-dark-gray: #343a40;
+  --color-black: #000000;
+
+  /* Semantic */
+  --background: #ffffff;
+  --foreground: #333333;
+  --background-dark: #0f1419;
+  --foreground-dark: #f8f9fa;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: #1c5244;
+  --color-secondary: #333333;
+  --color-accent: #f8ab1d;
+  --color-primary-light: #2a7561;
+  --color-primary-dark: #143d33;
+  --color-accent-light: #fabe4d;
+  --color-accent-dark: #d99310;
+  --font-sans: var(--font-ibm-plex-sans);
+  --font-heading: var(--font-montserrat);
+}
+
+/* Dark mode overrides */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0f1419;
+    --foreground: #f8f9fa;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-ibm-plex-sans);
+  line-height: 1.6;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-montserrat);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selection styling */
+::selection {
+  background-color: var(--color-accent);
+  color: var(--color-secondary);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-light-gray);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary-dark);
+}
+
+/* Animation utilities */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes countUp {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.8s ease-out forwards;
+}
+
+/* Gradient utilities */
+.gradient-primary {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary) 0%,
+    var(--color-primary-dark) 100%
+  );
+}
+
+.gradient-accent {
+  background: linear-gradient(
+    135deg,
+    var(--color-accent) 0%,
+    var(--color-accent-dark) 100%
+  );
+}
+
+/* Glass effect */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Button base styles */
+.btn-primary {
+  background-color: var(--color-accent);
+  color: var(--color-secondary);
+  padding: 0.75rem 2rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-accent-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(248, 171, 29, 0.3);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--color-accent);
+  padding: 0.75rem 2rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  border: 2px solid var(--color-accent);
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-accent);
+  color: var(--color-secondary);
+  transform: translateY(-2px);
+}
+
+/* Horizontal bounce animation */
+@keyframes bounce-x {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  50% {
+    transform: translateX(8px);
+  }
+}
+
+.animate-bounce-x {
+  animation: bounce-x 1s ease-in-out infinite;
+}
+
+/* Infinite Marquee Animation */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 40s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+@layer components {
+  .phone-input-container {
+    @apply flex items-center w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 transition-all;
+  }
+
+  .phone-input-container:focus-within {
+    @apply border-[#1C5244] ring-2 ring-[#1C5244]/20 outline-none;
+  }
+
+  .phone-input-container .PhoneInputInput {
+    @apply w-full bg-transparent border-none outline-none text-gray-900 placeholder:text-gray-500 text-base p-0 h-auto focus:ring-0;
+  }
+
+  .phone-input-container .PhoneInputCountry {
+    @apply mr-3 flex items-center relative;
+  }
+
+  .phone-input-container .PhoneInputCountrySelect {
+    @apply w-full h-full opacity-0 absolute top-0 left-0 cursor-pointer;
+  }
+
+  .phone-input-container .PhoneInputCountryIcon {
+    @apply w-8 h-5 shadow-sm border border-gray-100 rounded-sm overflow-hidden flex items-center justify-center;
+  }
+
+  .phone-input-container .PhoneInputCountryIcon--border {
+    @apply border-gray-200;
+  }
+  
+  .phone-input-container .PhoneInputCountryIconImg {
+    @apply object-cover w-full h-full;
+  }
+}
