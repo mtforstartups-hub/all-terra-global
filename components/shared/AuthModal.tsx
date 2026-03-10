@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import Link from "next/link";
 
 interface AuthModalProps {
     isOpen: boolean;
@@ -21,8 +22,11 @@ export default function AuthModal({
     const [errorMsg, setErrorMsg] = useState("");
 
     const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
+        console.log("Submit Clicked:- isPending not changed");
+
         e.preventDefault();
         setIsPending(true);
+        console.log("Submit Clicked:- isPending changed");
         setErrorMsg("");
 
         const formData = new FormData(e.currentTarget);
@@ -30,10 +34,15 @@ export default function AuthModal({
         const password = formData.get("password") as string;
         const fullname = formData.get("fullname") as string;
 
+        console.log("Form Data: ", formData);
+
+
         if (activeTab === "register") {
             const { error } = await authClient.signUp.email({ email, password, name: fullname });
             if (error) setErrorMsg(error.message || "Registration failed.");
             else {
+                console.log("Registration Success");
+
                 onLoginSuccess();
                 onClose();
             }
@@ -41,11 +50,14 @@ export default function AuthModal({
             const { error } = await authClient.signIn.email({ email, password });
             if (error) setErrorMsg(error.message || "Invalid credentials.");
             else {
+                console.log("Login Success");
+
                 onLoginSuccess();
                 onClose();
             }
         }
         setIsPending(false);
+        console.log("Submit Clicked:- isPending changed back");
     };
 
     // Reset state when tab changes
@@ -212,13 +224,13 @@ export default function AuthModal({
 
                             <div className="mt-6 text-center text-sm text-gray-500">
                                 By continuing, you agree to our{" "}
-                                <a href="#" className="text-[#1C5244] hover:underline">
+                                <Link href="/terms-of-service" className="text-[#1C5244] hover:underline">
                                     Terms of Service
-                                </a>{" "}
+                                </Link>{" "}
                                 and{" "}
-                                <a href="#" className="text-[#1C5244] hover:underline">
+                                <Link href="/privacy-policy" className="text-[#1C5244] hover:underline">
                                     Privacy Policy
-                                </a>.
+                                </Link>.
                             </div>
                         </div>
                     </motion.div>

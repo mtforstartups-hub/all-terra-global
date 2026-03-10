@@ -1,4 +1,4 @@
-﻿import Image from "next/image";
+import Image from "next/image";
 import TiltCard3D from "../TiltCard3D";
 
 export default function Sectors() {
@@ -76,6 +76,7 @@ export default function Sectors() {
                 src={sectors[0].image}
                 alt={sectors[0].title}
                 fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 100vw, 66vw"
                 className="object-cover transition-transform duration-500 group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-linear-to-t from-secondary via-secondary/60 to-transparent" />
@@ -131,6 +132,7 @@ export default function Sectors() {
                 src={sectors[1].image}
                 alt={sectors[1].title}
                 fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 className="object-cover transition-transform duration-500 group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-linear-to-t from-secondary via-secondary/60 to-transparent" />
@@ -195,6 +197,7 @@ export default function Sectors() {
                   src={sector.image}
                   alt={sector.title}
                   fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   className="object-cover transition-transform duration-500 group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-linear-to-t from-secondary via-secondary/60 to-transparent" />

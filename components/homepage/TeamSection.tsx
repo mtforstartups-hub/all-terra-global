@@ -153,6 +153,7 @@ export default function TeamSection() {
           src={member.image}
           alt={member.name}
           fill
+          sizes="(max-width: 1024px) 100vw, 25vw"
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
 

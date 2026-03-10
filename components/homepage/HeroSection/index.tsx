@@ -101,17 +101,17 @@ export default function Hero() {
             stagger: 0.2,
           },
           "<",
-        )
-        // 6. Image numbers fade in
-        .to(
-          ".img-number",
-          {
-            opacity: 1,
-            duration: 0.5,
-            stagger: 0.1,
-          },
-          "-=0.5",
         );
+      // 6. Image numbers fade in
+      // .to(
+      //   ".img-number",
+      //   {
+      //     opacity: 1,
+      //     duration: 0.5,
+      //     stagger: 0.1,
+      //   },
+      //   "-=0.5",
+      // );
 
       // Animate stat counters after stats become visible
       const statCounters =
@@ -356,6 +356,7 @@ export default function Hero() {
                     src={img.src}
                     alt={img.alt}
                     fill
+                    sizes="(max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
                     className="img-inner object-cover scale-[1.6] grayscale"
                     style={{ filter: "grayscale(100%)" }}
                   />
