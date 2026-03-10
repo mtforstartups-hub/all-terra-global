@@ -66,9 +66,9 @@ export default function Footer() {
       // { href: "#", label: "Investor Portal" },
     ],
     legal: [
-      { href: "#", label: "Privacy Policy" },
-      { href: "#", label: "Terms of Service" },
-      { href: "#", label: "Disclaimer" },
+      { href: "/privacy-policy", label: "Privacy Policy" },
+      { href: "/terms-of-service", label: "Terms of Service" },
+      { href: "/disclaimer", label: "Disclaimer" },
     ],
   };
   return (
