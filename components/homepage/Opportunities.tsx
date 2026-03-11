@@ -113,7 +113,7 @@ export default function Opportunities() {
     },
   ];
 
-  console.log("Authed user: ", session);
+  // console.log("Authed user: ", session);
 
   return (
     <section id="opportunities" className="py-24 bg-white">
@@ -123,7 +123,7 @@ export default function Opportunities() {
           <span className="text-[#1C5244] font-semibold text-sm uppercase tracking-wider">
             Investment Portfolio
           </span>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#333333] mt-3 mb-6">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-secondary mt-3 mb-6">
             Current Opportunities
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-6">
@@ -164,7 +164,7 @@ export default function Opportunities() {
               <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden h-full group">
                 {/* Header */}
                 <div
-                  className={`bg-gradient-to-r ${opp.gradient} p-6 relative overflow-hidden`}
+                  className={`bg-linear-to-r ${opp.gradient} p-6 relative overflow-hidden`}
                 >
                   {/* Floating Icon */}
                   <div
@@ -175,22 +175,22 @@ export default function Opportunities() {
                   </div>
 
                   <div className="flex items-center justify-between mb-3 relative z-10">
-                    <span className="px-3 py-1 bg-[#F8AB1D] text-[#333333] rounded-full text-xs font-bold animate-pulse">
+                    <span className="px-3 py-1 bg-[#F8AB1D] text-secondary rounded-full text-xs font-bold animate-pulse">
                       {opp.status}
                     </span>
                     <span
-                      className={`text-sm ${index === 2 ? "text-[#333333]/80" : "text-white/80"}`}
+                      className={`text-sm ${index === 2 ? "text-secondary/80" : "text-white/80"}`}
                     >
                       {opp.sector}
                     </span>
                   </div>
                   <h3
-                    className={`text-xl font-bold mb-1 ${index === 2 ? "text-[#333333]" : "text-white"}`}
+                    className={`text-xl font-bold mb-1 ${index === 2 ? "text-secondary" : "text-white"}`}
                   >
                     {opp.title}
                   </h3>
                   <p
-                    className={`text-sm ${index === 2 ? "text-[#333333]/70" : "text-white/70"}`}
+                    className={`text-sm ${index === 2 ? "text-secondary/70" : "text-white/70"}`}
                   >
                     {opp.location}
                   </p>
@@ -214,7 +214,7 @@ export default function Opportunities() {
                           d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                         />
                       </svg>
-                      <p className="text-[#333333] font-semibold mb-2">
+                      <p className="text-secondary font-semibold mb-2">
                         Login to View Details
                       </p>
                       <p className="text-gray-500 text-sm mb-4 text-center px-4">
@@ -222,7 +222,7 @@ export default function Opportunities() {
                       </p>
                       <button
                         onClick={() => setIsAuthModalOpen(true)}
-                        className="px-6 py-2 bg-[#1C5244] text-white rounded-lg font-semibold hover:bg-[#143d33] transition-colors"
+                        className="px-6 py-2 bg-[#1C5244] text-white rounded-lg font-semibold hover:bg-primary-dark transition-colors"
                       >
                         Login
                       </button>
@@ -230,7 +230,9 @@ export default function Opportunities() {
                   )}
 
                   {/* Stats - with blur when not logged in */}
-                  <div className={`grid grid-cols-3 divide-x divide-gray-100 bg-gray-50 ${!isLoggedIn ? 'blur-md select-none' : ''}`}>
+                  <div
+                    className={`grid grid-cols-3 divide-x divide-gray-100 bg-gray-50 ${!isLoggedIn ? "blur-md select-none" : ""}`}
+                  >
                     <div className="p-4 text-center">
                       <div className="text-lg font-bold text-[#1C5244]">
                         {opp.amount}
@@ -252,7 +254,9 @@ export default function Opportunities() {
                   </div>
 
                   {/* Content - with blur when not logged in */}
-                  <div className={`p-6 ${!isLoggedIn ? 'blur-md select-none' : ''}`}>
+                  <div
+                    className={`p-6 ${!isLoggedIn ? "blur-md select-none" : ""}`}
+                  >
                     <p className="text-gray-600 text-sm mb-4 leading-relaxed">
                       {opp.description}
                     </p>
@@ -263,7 +267,7 @@ export default function Opportunities() {
                           className="flex items-center gap-2 text-sm text-gray-600"
                         >
                           <svg
-                            className="w-4 h-4 text-[#1C5244] flex-shrink-0"
+                            className="w-4 h-4 text-[#1C5244] shrink-0"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -281,7 +285,7 @@ export default function Opportunities() {
                     </ul>
                     <Link
                       href="/contact"
-                      className="block w-full text-center bg-[#F8AB1D] text-[#333333] py-3 rounded-xl font-semibold hover:bg-[#d99310] transition-all group-hover:shadow-lg group-hover:-translate-y-0.5"
+                      className="block w-full text-center bg-[#F8AB1D] text-secondary py-3 rounded-xl font-semibold hover:bg-accent-dark transition-all group-hover:shadow-lg group-hover:-translate-y-0.5"
                     >
                       Express Interest
                     </Link>
@@ -294,7 +298,7 @@ export default function Opportunities() {
 
         {/* CTA Banner */}
         <TiltCard3D className="mt-16" tiltAmount={5} glareOpacity={0.1}>
-          <div className="bg-gradient-to-r from-[#333333] to-[#1a1a1a] rounded-3xl p-8 lg:p-12 flex flex-col lg:flex-row items-center justify-between gap-6">
+          <div className="bg-linear-to-r from-secondary to-[#1a1a1a] rounded-3xl p-8 lg:p-12 flex flex-col lg:flex-row items-center justify-between gap-6">
             <div>
               <h3 className="text-2xl font-bold text-white mb-2">
                 Looking for Other Investment Opportunities?
@@ -306,7 +310,7 @@ export default function Opportunities() {
             </div>
             <Link
               href="/contact"
-              className="flex-shrink-0 bg-[#F8AB1D] text-[#333333] px-8 py-4 rounded-xl font-bold hover:bg-[#d99310] transition-all hover:-translate-y-1 hover:shadow-xl"
+              className="shrink-0 bg-[#F8AB1D] text-secondary px-8 py-4 rounded-xl font-bold hover:bg-accent-dark transition-all hover:-translate-y-1 hover:shadow-xl"
             >
               Schedule a Call
             </Link>
@@ -317,7 +321,7 @@ export default function Opportunities() {
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
-        onLoginSuccess={() => { }} // State now comes from Better Auth hook!
+        onLoginSuccess={() => {}} // State now comes from Better Auth hook!
       />
     </section>
   );
