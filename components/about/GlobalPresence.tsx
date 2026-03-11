@@ -59,10 +59,10 @@ export default function GlobalPresence() {
                 "https://images.unsplash.com/photo-1650357519740-c888919621f8?auto=format&fit=crop&w=600&q=80",
             },
             {
-              location: "New York, USA",
+              location: "New Jersey, USA",
               role: "Technology & Analytics",
               image:
-                "https://images.unsplash.com/photo-1485871981521-5b1fd3805eee?auto=format&fit=crop&w=600&q=80",
+                "https://images.unsplash.com/photo-1589178941221-136be7711c99?auto=format&fit=crop&w=600&q=80",
             },
             {
               location: "Mumbai, India",

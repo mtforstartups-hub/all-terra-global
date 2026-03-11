@@ -196,7 +196,7 @@ export default function Footer() {
                   <br />
                   Harare, Zimbabwe
                   <br />
-                  New York, USA
+                  New Jersey, USA
                   <br />
                   Mumbai, India
                 </span>
