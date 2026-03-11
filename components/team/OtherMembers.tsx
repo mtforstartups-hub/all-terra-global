@@ -54,6 +54,22 @@ const teamMembers = [
       "Strategic Leadership",
     ],
   },
+  {
+    name: "Michael Masimba",
+    title: "Manager, Zimbabwe",
+    subtitle: "Local Operations & Strategic Support",
+    image: "/images/team/Michael_Masimba.jpeg",
+    bio: [
+      "Managing on-ground logistics & operational execution",
+      "Building relationships with local authorities, regulatory bodies, and community stakeholders",
+      "Supporting exploration, land access, and operational activities",
+    ],
+    sectors: [
+      "Local Operations & Field Coordination",
+      "Government & Community Relations",
+      "Resource & Project Support",
+    ],
+  },
 ];
 
 export default function OtherMembers() {

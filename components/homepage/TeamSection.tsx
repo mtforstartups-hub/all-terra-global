@@ -40,7 +40,13 @@ const teamMembers: TeamMember[] = [
     title: "Manager, India",
     subtitle: "",
     image: "/images/team/Abhishek_Jain.jpeg",
-  }
+  },
+  {
+    name: "Michael Masimba",
+    title: "Manager, Zimbabwe",
+    subtitle: "Local Operations & Strategic Support",
+    image: "/images/team/Michael_Masimba.jpeg",
+  },
   // {
   //     name: "Simbarashe Jerahuni",
   //     title: "Director",
@@ -159,16 +165,18 @@ export default function TeamSection() {
 
         {/* Gradient overlay - Desktop: appears on hover, Mobile: always visible */}
         <div
-          className={`absolute inset-0 bg-linear-to-t from-[#0a0a0a] via-[#0a0a0a]/60 to-transparent transition-opacity duration-300 ${isDesktop ? "opacity-0 group-hover:opacity-100" : "opacity-100"
-            }`}
+          className={`absolute inset-0 bg-linear-to-t from-[#0a0a0a] via-[#0a0a0a]/60 to-transparent transition-opacity duration-300 ${
+            isDesktop ? "opacity-0 group-hover:opacity-100" : "opacity-100"
+          }`}
         />
 
         {/* Content overlay - Desktop: animates in on hover, Mobile: always visible */}
         <div
-          className={`absolute bottom-0 left-0 right-0 p-4 lg:p-5 transition-all duration-300 ${isDesktop
+          className={`absolute bottom-0 left-0 right-0 p-4 lg:p-5 transition-all duration-300 ${
+            isDesktop
               ? "translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100"
               : "translate-y-0 opacity-100"
-            }`}
+          }`}
         >
           <h3 className="text-base lg:text-lg font-bold text-white leading-tight">
             {member.name}
@@ -179,9 +187,7 @@ export default function TeamSection() {
             </p>
           )}
           {member.subtitle && (
-            <p className="text-white/60 text-xs mt-1 line-clamp-1">
-              {member.subtitle}
-            </p>
+            <p className="text-white/60 text-xs mt-1">{member.subtitle}</p>
           )}
         </div>
       </div>
@@ -212,7 +218,7 @@ export default function TeamSection() {
 
       {/* Desktop: Static Grid */}
       {!isMobile && (
-        <div className="hidden lg:grid grid-cols-4 gap-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="hidden lg:grid grid-cols-5 gap-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {teamMembers.map((member, index) => (
             <TeamCard
               key={member.name}
@@ -290,10 +296,11 @@ export default function TeamSection() {
               <button
                 key={index}
                 onClick={() => goToSlide(index)}
-                className={`w-2 h-2 rounded-full transition-all duration-300 ${currentSlide === index
+                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                  currentSlide === index
                     ? "bg-[#F8AB1D] w-6"
                     : "bg-white/30 hover:bg-white/50"
-                  }`}
+                }`}
                 aria-label={`Go to slide ${index + 1}`}
               />
             ))}
