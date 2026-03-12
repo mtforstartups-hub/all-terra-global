@@ -1,28 +1,13 @@
 import { betterAuth } from "better-auth";
-import { createClient } from "@libsql/client";
-import { LibsqlDialect } from "@libsql/kysely-libsql";
+import mysql from "mysql2/promise";
 
-// const database = new Database("auth.db");
-
-// export const auth = betterAuth({
-//   database: database,
-//   baseURL: "http://localhost:3000/",
-//   emailAndPassword: { enabled: true },
-// });
-
-const db = createClient({
-  url: process.env.TURSO_DATABASE_URL!,
-  authToken: process.env.TURSO_AUTH_TOKEN,
+// Database connection pool for MariaDB / MySQL
+const connection = mysql.createPool({
+  uri: process.env.DATABASE_URL!,
 });
 
-
 export const auth = betterAuth({
-  database: {
-    dialect: new LibsqlDialect({
-      client: db as any,
-    }),
-    type: "sqlite"
-  },
+  database: connection,
   baseURL: process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
   emailAndPassword: { enabled: true },
 });

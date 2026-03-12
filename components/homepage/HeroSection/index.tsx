@@ -226,7 +226,7 @@ export default function Hero() {
           playsInline
           preload="auto"
           className="absolute inset-0 w-full h-full object-cover"
-          poster="/images/hero-video-poster.png"
+          poster="/images/hero-video-poster.webp"
         >
           <source src="/compressed_videos/finance-hero_compressed.mp4" type="video/mp4" />
         </video>
