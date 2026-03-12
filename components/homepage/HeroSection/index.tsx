@@ -359,6 +359,7 @@ export default function Hero() {
                     sizes="(max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
                     className="img-inner object-cover scale-[1.6] grayscale"
                     style={{ filter: "grayscale(100%)" }}
+                    quality={60}
                   />
                   <div className="absolute inset-0 bg-linear-to-t from-[#1C5244]/40 to-transparent" />
                   {/* <span className="img-number absolute bottom-3 left-3 text-white/80 text-sm font-medium opacity-0">

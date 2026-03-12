@@ -50,6 +50,7 @@ export default function Header() {
                   width={100}
                   height={100}
                   priority
+                  quality={60}
                 />
               </span>
             </div>
@@ -70,10 +71,10 @@ export default function Header() {
                   key={link.href}
                   href={link.href}
                   className={`text-sm font-medium transition-colors relative group ${isActive
-                      ? "text-[#F8AB1D]"
-                      : isScrolled
-                        ? "text-secondary hover:text-[#F8AB1D]"
-                        : "text-white hover:text-[#F8AB1D]"
+                    ? "text-[#F8AB1D]"
+                    : isScrolled
+                      ? "text-secondary hover:text-[#F8AB1D]"
+                      : "text-white hover:text-[#F8AB1D]"
                     }`}
                 >
                   {link.label}
@@ -135,8 +136,8 @@ export default function Header() {
                     key={link.href}
                     href={link.href}
                     className={`font-medium py-2 pl-3 border-l-2 transition-all ${isActive
-                        ? "text-[#F8AB1D] border-[#F8AB1D]"
-                        : "text-secondary border-transparent hover:text-[#1C5244] hover:border-[#1C5244]"
+                      ? "text-[#F8AB1D] border-[#F8AB1D]"
+                      : "text-secondary border-transparent hover:text-[#1C5244] hover:border-[#1C5244]"
                       }`}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
