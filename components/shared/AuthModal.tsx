@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
+import { X, ArrowLeft } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 
@@ -12,29 +12,28 @@ interface AuthModalProps {
   onLoginSuccess: () => void;
 }
 
+type TabState = "login" | "register" | "forgotPassword";
+
 export default function AuthModal({
   isOpen,
   onClose,
   onLoginSuccess,
 }: AuthModalProps) {
-  const [activeTab, setActiveTab] = useState<"login" | "register">("login");
+  const [activeTab, setActiveTab] = useState<TabState>("login");
   const [isPending, setIsPending] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
-  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
-    // console.log("Submit Clicked:- isPending not changed");
-
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsPending(true);
-    // console.log("Submit Clicked:- isPending changed");
     setErrorMsg("");
+    setSuccessMsg("");
 
     const formData = new FormData(e.currentTarget);
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
     const fullname = formData.get("fullname") as string;
-
-    // console.log("Form Data: ", formData);
 
     if (activeTab === "register") {
       const { error } = await authClient.signUp.email({
@@ -42,31 +41,59 @@ export default function AuthModal({
         password,
         name: fullname,
       });
-      if (error) setErrorMsg(error.message || "Registration failed.");
-      else {
-        // console.log("Registration Success");
 
+      if (error) {
+        setErrorMsg(error.message || "Registration failed.");
+      } else {
+        // Better Auth sends the verification email automatically if configured on the server.
+        // setSuccessMsg(
+        //   "Registration successful! Please check your email to verify your account.",
+        // );
+        setSuccessMsg("Registration successful! Logging you in...");
+        // Optional: you can delay onClose() so they read the message, or keep it open.
+        setTimeout(() => {
+          onLoginSuccess();
+          onClose();
+        }, 4000);
+      }
+    } else if (activeTab === "login") {
+      const { error } = await authClient.signIn.email({ email, password });
+
+      if (error) {
+        // Handle unverified email error specifically if you have that configured
+        if (
+          error.status === 403 &&
+          error.message!.toLowerCase().includes("verify")
+        ) {
+          setErrorMsg("Please verify your email address before logging in.");
+        } else {
+          setErrorMsg(error.message || "Invalid credentials.");
+        }
+      } else {
         onLoginSuccess();
         onClose();
       }
-    } else {
-      const { error } = await authClient.signIn.email({ email, password });
-      if (error) setErrorMsg(error.message || "Invalid credentials.");
-      else {
-        // console.log("Login Success");
+    } else if (activeTab === "forgotPassword") {
+      const { error } = await authClient.requestPasswordReset({
+        email,
+        redirectTo: `${window.location.origin}/reset-password`, // Make sure you create this page!
+      });
 
-        onLoginSuccess();
-        onClose();
+      if (error) {
+        setErrorMsg(error.message || "Failed to send reset link.");
+      } else {
+        setSuccessMsg("Password reset link sent! Please check your inbox.");
       }
     }
+
     setIsPending(false);
-    // console.log("Submit Clicked:- isPending changed back");
   };
 
   // Reset state when tab changes
-  const switchTab = (tab: "login" | "register") => {
+  const switchTab = (tab: TabState) => {
     setActiveTab(tab);
     setErrorMsg("");
+    setSuccessMsg("");
   };
 
   return (
@@ -101,48 +128,56 @@ export default function AuthModal({
               </button>
 
               <h2 className="text-2xl font-bold mb-2">
-                {activeTab === "login" ? "Welcome Back" : "Create Account"}
+                {activeTab === "login"
+                  ? "Welcome Back"
+                  : activeTab === "register"
+                    ? "Create Account"
+                    : "Reset Password"}
               </h2>
               <p className="text-white/80 text-sm">
-                Unlock full access to exclusive investment opportunities.
+                {activeTab === "forgotPassword"
+                  ? "Enter your email to receive a password reset link."
+                  : "Unlock full access to exclusive investment opportunities."}
               </p>
             </div>
 
-            {/* Tabs */}
-            <div className="flex border-b border-gray-100">
-              <button
-                onClick={() => switchTab("login")}
-                className={`flex-1 py-4 text-sm font-semibold transition-colors relative ${
-                  activeTab === "login"
-                    ? "text-[#1C5244]"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                Login
-                {activeTab === "login" && (
-                  <motion.div
-                    layoutId="activeTabIndicator"
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#F8AB1D]"
-                  />
-                )}
-              </button>
-              <button
-                onClick={() => switchTab("register")}
-                className={`flex-1 py-4 text-sm font-semibold transition-colors relative ${
-                  activeTab === "register"
-                    ? "text-[#1C5244]"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                Register
-                {activeTab === "register" && (
-                  <motion.div
-                    layoutId="activeTabIndicator"
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#F8AB1D]"
-                  />
-                )}
-              </button>
-            </div>
+            {/* Tabs - Hidden during forgot password */}
+            {activeTab !== "forgotPassword" && (
+              <div className="flex border-b border-gray-100">
+                <button
+                  onClick={() => switchTab("login")}
+                  className={`flex-1 py-4 text-sm font-semibold transition-colors relative ${
+                    activeTab === "login"
+                      ? "text-[#1C5244]"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  Login
+                  {activeTab === "login" && (
+                    <motion.div
+                      layoutId="activeTabIndicator"
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#F8AB1D]"
+                    />
+                  )}
+                </button>
+                <button
+                  onClick={() => switchTab("register")}
+                  className={`flex-1 py-4 text-sm font-semibold transition-colors relative ${
+                    activeTab === "register"
+                      ? "text-[#1C5244]"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  Register
+                  {activeTab === "register" && (
+                    <motion.div
+                      layoutId="activeTabIndicator"
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#F8AB1D]"
+                    />
+                  )}
+                </button>
+              </div>
+            )}
 
             <div className="p-6">
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -150,6 +185,13 @@ export default function AuthModal({
                 {errorMsg && (
                   <div className="p-3 text-sm text-red-500 bg-red-50 rounded-lg border border-red-100">
                     {errorMsg}
+                  </div>
+                )}
+
+                {/* Success Message */}
+                {successMsg && (
+                  <div className="p-3 text-sm text-green-700 bg-green-50 rounded-lg border border-green-200">
+                    {successMsg}
                   </div>
                 )}
 
@@ -166,8 +208,6 @@ export default function AuthModal({
                       </label>
                       <input
                         type="text"
-                        // value={name}
-                        // onChange={(e) => setName(e.target.value)}
                         name="fullname"
                         placeholder="John Doe"
                         required
@@ -184,69 +224,92 @@ export default function AuthModal({
                   <input
                     type="email"
                     name="email"
-                    // value={email}
-                    // onChange={(e) => setEmail(e.target.value)}
                     placeholder="john@example.com"
                     required
                     className="w-full px-4 py-3 text-gray-900 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#1C5244]/20 focus:border-[#1C5244] transition-all bg-gray-50/50"
                   />
                 </div>
 
-                <div className="space-y-1">
-                  <div className="flex justify-between items-center">
-                    <label className="text-sm font-medium text-gray-700">
-                      Password
-                    </label>
-                    {activeTab === "login" && (
-                      <button
-                        type="button"
-                        className="text-xs font-medium text-[#1C5244] hover:underline"
-                      >
-                        Forgot password?
-                      </button>
-                    )}
-                  </div>
-                  <input
-                    type="password"
-                    name="password"
-                    // value={password}
-                    // onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    required
-                    className="w-full px-4 py-3 text-gray-900 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#1C5244]/20 focus:border-[#1C5244] transition-all bg-gray-50/50"
-                  />
-                </div>
+                <AnimatePresence mode="popLayout">
+                  {activeTab !== "forgotPassword" && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="space-y-1"
+                    >
+                      <div className="flex justify-between items-center mt-4">
+                        <label className="text-sm font-medium text-gray-700">
+                          Password
+                        </label>
+                        {activeTab === "login" && (
+                          <button
+                            type="button"
+                            onClick={() => switchTab("forgotPassword")}
+                            className="text-xs font-medium text-[#1C5244] hover:underline"
+                          >
+                            Forgot password?
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        type="password"
+                        name="password"
+                        placeholder="••••••••"
+                        required
+                        className="w-full px-4 py-3 text-gray-900 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#1C5244]/20 focus:border-[#1C5244] transition-all bg-gray-50/50"
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="w-full py-3.5 bg-[#F8AB1D] text-[#333333] font-bold rounded-xl mt-6 hover:bg-[#d99310] transition-colors shadow-lg shadow-[#F8AB1D]/20 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-3.5 bg-[#F8AB1D] text-secondary font-bold rounded-xl mt-6 hover:bg-accent-dark transition-colors shadow-lg shadow-[#F8AB1D]/20 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isPending
                     ? "Please wait..."
                     : activeTab === "login"
                       ? "Sign In"
-                      : "Create Account"}
+                      : activeTab === "register"
+                        ? "Create Account"
+                        : "Send Reset Link"}
                 </button>
               </form>
 
-              <div className="mt-6 text-center text-sm text-gray-500">
-                By continuing, you agree to our{" "}
-                <Link
-                  href="/terms-of-service"
-                  className="text-[#1C5244] hover:underline"
-                >
-                  Terms of Service
-                </Link>{" "}
-                and{" "}
-                <Link
-                  href="/privacy-policy"
-                  className="text-[#1C5244] hover:underline"
-                >
-                  Privacy Policy
-                </Link>
-                .
-              </div>
+              {/* Back to Login Button for Forgot Password */}
+              {activeTab === "forgotPassword" && (
+                <div className="mt-4 text-center">
+                  <button
+                    onClick={() => switchTab("login")}
+                    className="inline-flex items-center text-sm text-gray-500 hover:text-[#1C5244] transition-colors"
+                  >
+                    <ArrowLeft className="w-4 h-4 mr-1" />
+                    Back to login
+                  </button>
+                </div>
+              )}
+
+              {activeTab !== "forgotPassword" && (
+                <div className="mt-6 text-center text-sm text-gray-500">
+                  By continuing, you agree to our{" "}
+                  <Link
+                    href="/terms-of-service"
+                    className="text-[#1C5244] hover:underline"
+                  >
+                    Terms of Service
+                  </Link>{" "}
+                  and{" "}
+                  <Link
+                    href="/privacy-policy"
+                    className="text-[#1C5244] hover:underline"
+                  >
+                    Privacy Policy
+                  </Link>
+                  .
+                </div>
+              )}
             </div>
           </motion.div>
         </>
