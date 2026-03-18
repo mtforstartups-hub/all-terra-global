@@ -3,6 +3,8 @@ import { z } from "zod";
 import nodemailer from "nodemailer";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { revalidatePath } from "next/cache";
+import mysql from "mysql2/promise";
 
 // ─── Schema ────────────────────────────────────────────────────────────────
 
@@ -117,14 +119,15 @@ function buildEmailHtml(data: z.infer<typeof contactFormSchema>): string {
               </table>
 
               <!-- Message -->
-              ${data.message
-      ? `
+              ${
+                data.message
+                  ? `
               <div style="margin-top:24px;">
                 <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#1C5244;letter-spacing:0.5px;text-transform:uppercase;">Message</p>
                 <div style="background:#f8faf9;border:1px solid #e0ebe8;border-radius:10px;padding:16px 20px;font-size:14px;color:#444444;line-height:1.7;white-space:pre-wrap;">${data.message}</div>
               </div>`
-      : ""
-    }
+                  : ""
+              }
 
               <!-- CTA -->
               <div style="margin-top:32px;text-align:center;">
@@ -216,4 +219,60 @@ export async function investorContact(
   };
 }
 
+// Reuse your existing connection details
+const connection = mysql.createPool({
+  uri: process.env.DATABASE_URL!,
+});
 
+const transporter = nodemailer.createTransport({
+  host: process.env.EMAIL_HOST,
+  port: Number(process.env.EMAIL_PORT) || 587,
+  secure: process.env.EMAIL_SECURE === "false",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASSWORD,
+  },
+});
+
+export async function signUserNda(
+  userId: string,
+  userEmail: string,
+  userName: string,
+) {
+  try {
+    // 1. Update the user in the database
+    await connection.execute("UPDATE user SET hasSignedNda = ? WHERE id = ?", [
+      true,
+      userId,
+    ]);
+
+    // 2. Send the NDA Email
+    // Note: For a real app, you might want to attach a PDF.
+    // Here we send an HTML copy as a legal receipt.
+    const dateSigned = new Date().toLocaleString();
+
+    await transporter.sendMail({
+      from: '"AllTerraGlobal" <info@allterraglobal.com>',
+      to: userEmail,
+      subject: "Your Signed Non-Disclosure Agreement",
+      html: `
+        <h2>Non-Disclosure Agreement - Executed Copy</h2>
+        <p>Dear ${userName},</p>
+        <p>This email serves as confirmation that you have digitally signed the Non-Disclosure Agreement on <strong>${dateSigned}</strong>.</p>
+        <hr />
+        <h3>Agreement Terms:</h3>
+        <p>[Insert your full NDA text here...]</p>
+        <hr />
+        <p>Signed electronically by: <strong>${userName}</strong> (${userEmail})</p>
+      `,
+    });
+
+    // 3. Revalidate the dashboard page so the blur is removed
+    revalidatePath("/dashboard");
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error signing NDA:", error);
+    return { success: false, error: "Failed to sign NDA" };
+  }
+}

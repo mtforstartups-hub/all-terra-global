@@ -18,17 +18,30 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASSWORD,
   },
-});
+  tls: {
+    // This is the magic line for Plesk/cPanel servers
+    rejectUnauthorized: false,
+  },
 
-// Placeholder for your DocuSign logic
-async function sendDocuSignEnvelope(email: string, name: string) {
-  // Implement your DocuSign eSignature API logic here.
-  // Example: Generate envelope, send via DocuSign SDK
-  console.log(`[Dev] Triggering DocuSign for ${email}`);
-}
+  // ADD THESE NEW SETTINGS:
+  pool: true, // Uses a connection pool (better for Next.js API routes)
+  maxConnections: 1, // Don't overwhelm the Plesk server
+  maxMessages: 10,
+  greetingTimeout: 10000, // Wait 10 seconds for the server to say hello
+  connectionTimeout: 10000, // Wait 10 seconds for the initial connection
+});
 
 export const auth = betterAuth({
   database: connection,
+  user: {
+    additionalFields: {
+      hasSignedNda: {
+        type: "boolean",
+        required: false,
+        defaultValue: false,
+      },
+    },
+  },
   baseURL:
     process.env.BETTER_AUTH_URL ||
     process.env.NEXT_PUBLIC_APP_URL ||
@@ -44,7 +57,7 @@ export const auth = betterAuth({
       // FIRE AND FORGET: Do not await this promise
       const emailPromise = transporter
         .sendMail({
-          from: '"Your App Name" <noreply@yourdomain.com>',
+          from: '"AllTerraGlobal" <info@allterraglobal.com>',
           to: user.email,
           subject: "Reset your password",
           html: `<p>Click <a href="${url}">here</a> to reset your password.</p>`,
@@ -67,7 +80,7 @@ export const auth = betterAuth({
       // FIRE AND FORGET: Do not await this promise
       const emailPromise = transporter
         .sendMail({
-          from: '"Your App Name" <noreply@yourdomain.com>',
+          from: '"AllTerraGlobal" <info@allterraglobal.com>',
           to: user.email,
           subject: "Verify your email address",
           html: `<p>Click <a href="${url}">here</a> to verify your account.</p>`,
@@ -100,16 +113,6 @@ export const auth = betterAuth({
             );
 
           waitUntil(welcomePromise);
-
-          // 2. Fire and forget the DocuSign Email/Envelope
-          const docusignPromise = sendDocuSignEnvelope(
-            user.email,
-            user.name,
-          ).catch((err) =>
-            console.error("Failed to send DocuSign envelope:", err),
-          );
-
-          waitUntil(docusignPromise);
         },
       },
     },
