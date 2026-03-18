@@ -246,26 +246,26 @@ export async function signUserNda(
       userId,
     ]);
 
-    // 2. Send the NDA Email
+    // 2. Send the NDA Email (temporarily disabled)
     // Note: For a real app, you might want to attach a PDF.
     // Here we send an HTML copy as a legal receipt.
-    const dateSigned = new Date().toLocaleString();
+    // const dateSigned = new Date().toLocaleString();
 
-    await transporter.sendMail({
-      from: '"AllTerraGlobal" <info@allterraglobal.com>',
-      to: userEmail,
-      subject: "Your Signed Non-Disclosure Agreement",
-      html: `
-        <h2>Non-Disclosure Agreement - Executed Copy</h2>
-        <p>Dear ${userName},</p>
-        <p>This email serves as confirmation that you have digitally signed the Non-Disclosure Agreement on <strong>${dateSigned}</strong>.</p>
-        <hr />
-        <h3>Agreement Terms:</h3>
-        <p>[Insert your full NDA text here...]</p>
-        <hr />
-        <p>Signed electronically by: <strong>${userName}</strong> (${userEmail})</p>
-      `,
-    });
+    // await transporter.sendMail({
+    //   from: '"AllTerraGlobal" <info@allterraglobal.com>',
+    //   to: userEmail,
+    //   subject: "Your Signed Non-Disclosure Agreement",
+    //   html: `
+    //     <h2>Non-Disclosure Agreement - Executed Copy</h2>
+    //     <p>Dear ${userName},</p>
+    //     <p>This email serves as confirmation that you have digitally signed the Non-Disclosure Agreement on <strong>${dateSigned}</strong>.</p>
+    //     <hr />
+    //     <h3>Agreement Terms:</h3>
+    //     <p>[Insert your full NDA text here...]</p>
+    //     <hr />
+    //     <p>Signed electronically by: <strong>${userName}</strong> (${userEmail})</p>
+    //   `,
+    // });
 
     // 3. Revalidate the dashboard page so the blur is removed
     revalidatePath("/dashboard");

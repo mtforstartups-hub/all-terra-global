@@ -1,8 +1,9 @@
 // app/dashboard/page.tsx
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth"; // Adjust path to your better-auth config
+import { auth } from "@/lib/auth";
 import NdaModal from "@/components/dashboard/NdaModal";
+import PageHero from "@/components/shared/PageHero";
 
 export default async function DashboardPage() {
   const session = await auth.api.getSession({
@@ -10,18 +11,26 @@ export default async function DashboardPage() {
   });
 
   if (!session) {
-    redirect("/"); // Or wherever your login page is
+    redirect("/");
   }
 
   const user = session.user;
   const hasSignedNda = user.hasSignedNda;
 
+  const initials = user.name
+    ? user.name
+      .split(" ")
+      .map((n: string) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2)
+    : "U";
+
   return (
-    <main className="relative min-h-screen bg-gray-50">
-      {/* If NDA is NOT signed, show the modal over the screen
-       */}
+    <div className=" ">
+      {/* ── NDA Modal Overlay ──────────────────────────────────────────── */}
       {!hasSignedNda && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+        <div className="absolute inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <NdaModal
             userId={user.id}
             userEmail={user.email}
@@ -30,18 +39,14 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* The Dashboard Content.
-        We add a blur and pointer-events-none if the NDA isn't signed.
-      */}
-      <div
-        className={`p-8 ${!hasSignedNda ? "blur-md pointer-events-none select-none" : ""}`}
-      >
-        <h1 className="text-3xl font-bold">Exclusive Dashboard</h1>
-        <p>
-          Welcome, {user.name}. Here are the sensitive investment details...
-        </p>
-        {/* Your sensitive dashboard widgets go here */}
-      </div>
-    </main>
+      {/* ── Layout ─────────────────────────────────────────────────────── */}
+      <PageHero
+        label="Dashboard"
+        title={`Welcome back, ${user.name?.split(" ")[0] ?? "Investor"}`}
+        description="Here&apos;s your investment overview for today."
+        backgroundImage="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=2000&q=80"
+        imageAlt="Modern architecture"
+      />
+    </div>
   );
 }

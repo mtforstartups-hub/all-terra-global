@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, ArrowLeft } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -55,6 +56,7 @@ export default function AuthModal({
           onLoginSuccess();
           onClose();
         }, 4000);
+        redirect("/dashboard");
       }
     } else if (activeTab === "login") {
       const { error } = await authClient.signIn.email({ email, password });
@@ -72,6 +74,7 @@ export default function AuthModal({
       } else {
         onLoginSuccess();
         onClose();
+        redirect("/dashboard");
       }
     } else if (activeTab === "forgotPassword") {
       const { error } = await authClient.requestPasswordReset({
@@ -146,11 +149,10 @@ export default function AuthModal({
               <div className="flex border-b border-gray-100">
                 <button
                   onClick={() => switchTab("login")}
-                  className={`flex-1 py-4 text-sm font-semibold transition-colors relative ${
-                    activeTab === "login"
-                      ? "text-[#1C5244]"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
+                  className={`flex-1 py-4 text-sm font-semibold transition-colors relative ${activeTab === "login"
+                    ? "text-[#1C5244]"
+                    : "text-gray-500 hover:text-gray-700"
+                    }`}
                 >
                   Login
                   {activeTab === "login" && (
@@ -162,11 +164,10 @@ export default function AuthModal({
                 </button>
                 <button
                   onClick={() => switchTab("register")}
-                  className={`flex-1 py-4 text-sm font-semibold transition-colors relative ${
-                    activeTab === "register"
-                      ? "text-[#1C5244]"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
+                  className={`flex-1 py-4 text-sm font-semibold transition-colors relative ${activeTab === "register"
+                    ? "text-[#1C5244]"
+                    : "text-gray-500 hover:text-gray-700"
+                    }`}
                 >
                   Register
                   {activeTab === "register" && (

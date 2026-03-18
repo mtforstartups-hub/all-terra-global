@@ -78,19 +78,19 @@ export const auth = betterAuth({
       console.log(`[Dev] Verification link for ${user.email}: ${url}`);
 
       // FIRE AND FORGET: Do not await this promise
-      const emailPromise = transporter
-        .sendMail({
-          from: '"AllTerraGlobal" <info@allterraglobal.com>',
-          to: user.email,
-          subject: "Verify your email address",
-          html: `<p>Click <a href="${url}">here</a> to verify your account.</p>`,
-        })
-        .catch((err) =>
-          console.error("Failed to send verification email:", err),
-        );
+      // const emailPromise = transporter
+      //   .sendMail({
+      //     from: '"AllTerraGlobal" <info@allterraglobal.com>',
+      //     to: user.email,
+      //     subject: "Verify your email address",
+      //     html: `<p>Click <a href="${url}">here</a> to verify your account.</p>`,
+      //   })
+      //   .catch((err) =>
+      //     console.error("Failed to send verification email:", err),
+      //   );
 
       // SERVERLESS FIX:
-      waitUntil(emailPromise);
+      // waitUntil(emailPromise);
     },
   },
 
@@ -101,18 +101,18 @@ export const auth = betterAuth({
           console.log(`[Dev] New user signed up: ${user.email}`);
 
           // 1. Fire and forget the Welcome Email
-          const welcomePromise = transporter
-            .sendMail({
-              from: '"AllTerraGlobal" <info@allterraglobal.com>',
-              to: user.email,
-              subject: "Welcome to Our Platform!",
-              html: `<p>Hi ${user.name}, we're thrilled to have you here!</p>`,
-            })
-            .catch((err) =>
-              console.error("Failed to send welcome email:", err),
-            );
+          // const welcomePromise = transporter
+          //   .sendMail({
+          //     from: '"AllTerraGlobal" <info@allterraglobal.com>',
+          //     to: user.email,
+          //     subject: "Welcome to Our Platform!",
+          //     html: `<p>Hi ${user.name}, we're thrilled to have you here!</p>`,
+          //   })
+          //   .catch((err) =>
+          //     console.error("Failed to send welcome email:", err),
+          //   );
 
-          waitUntil(welcomePromise);
+          // waitUntil(welcomePromise);
         },
       },
     },
