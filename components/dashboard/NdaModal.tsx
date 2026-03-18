@@ -61,8 +61,7 @@ export default function NdaModal({
       <div className="bg-[#1C5244] p-6 text-white">
         <h2 className="text-2xl font-bold">Action Required: Sign NDA</h2>
         <p className="text-white/80 mt-1">
-          You must agree to our Non-Disclosure Agreement to view dashboard
-          contents.
+          You must agree to our Non-Disclosure Agreement.
         </p>
       </div>
 

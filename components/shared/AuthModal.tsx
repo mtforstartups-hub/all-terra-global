@@ -74,7 +74,7 @@ export default function AuthModal({
       } else {
         onLoginSuccess();
         onClose();
-        redirect("/dashboard");
+        // redirect("/dashboard");
       }
     } else if (activeTab === "forgotPassword") {
       const { error } = await authClient.requestPasswordReset({

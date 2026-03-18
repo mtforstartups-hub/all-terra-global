@@ -78,8 +78,14 @@ export default function OpportunitiesList() {
     const containerRef = useRef<HTMLElement>(null);
     const { data: session, isPending } = authClient.useSession();
     const isLoggedIn = !!session;
+    const user = session?.user;
+    const hasSignedNda = user?.hasSignedNda;
 
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+    // Secure Data Masking Flag
+    // If auth is loading, not logged in, or no NDA, the data is locked out.
+    const isLockedOut = isPending || !isLoggedIn || !hasSignedNda;
 
     useGSAP(
         () => {
@@ -156,15 +162,20 @@ export default function OpportunitiesList() {
                                         </span>
                                     </div>
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                                    {/* Returns / Tenure badges — blurred when logged out */}
-                                    <div className={`absolute bottom-6 left-6 right-6 ${!isLoggedIn ? "blur-sm select-none" : ""}`}>
+
+                                    {/* Masked Badges */}
+                                    <div className={`absolute bottom-6 left-6 right-6 ${isLockedOut ? "blur-sm select-none" : ""}`}>
                                         <div className="flex gap-4">
                                             <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
-                                                <div className="text-white font-bold">{opp.returns}</div>
+                                                <div className="text-white font-bold">
+                                                    {isLockedOut ? "XX%" : opp.returns}
+                                                </div>
                                                 <div className="text-white/70 text-xs">Returns</div>
                                             </div>
                                             <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
-                                                <div className="text-white font-bold">{opp.tenure}</div>
+                                                <div className="text-white font-bold">
+                                                    {isLockedOut ? "XX mos" : opp.tenure}
+                                                </div>
                                                 <div className="text-white/70 text-xs">Tenure</div>
                                             </div>
                                         </div>
@@ -183,27 +194,15 @@ export default function OpportunitiesList() {
                                 </h2>
                                 <p className="text-gray-600 text-lg mb-4">{opp.location}</p>
 
-                                {/* Gated block — blurred + overlay when logged out */}
+                                {/* Gated block */}
                                 <div className="relative">
                                     {/* Lock overlay */}
                                     {!isLoggedIn && (
                                         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-2xl">
-                                            <svg
-                                                className="w-10 h-10 text-[#1C5244] mb-3"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={1.5}
-                                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                                                />
+                                            <svg className="w-10 h-10 text-[#1C5244] mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                             </svg>
-                                            <p className="text-[#333333] font-semibold mb-1">
-                                                Login to View Details
-                                            </p>
+                                            <p className="text-[#333333] font-semibold mb-1">Login to View Details</p>
                                             <p className="text-gray-500 text-sm mb-4 text-center px-6">
                                                 Full investment details available after authentication
                                             </p>
@@ -216,9 +215,32 @@ export default function OpportunitiesList() {
                                         </div>
                                     )}
 
-                                    {/* Blurred content */}
-                                    <div className={!isLoggedIn ? "blur-md select-none" : ""}>
-                                        <p className="text-gray-600 mb-6">{opp.description}</p>
+                                    {/* NDA Overlay */}
+                                    {isLoggedIn && !hasSignedNda && (
+                                        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-2xl">
+                                            <svg className="w-12 h-12 text-[#F8AB1D] mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                            <p className="text-[#333333] font-semibold mb-1">NDA Signature Required</p>
+                                            <p className="text-gray-500 text-sm mb-4 text-center px-6">
+                                                Please sign the Non-Disclosure Agreement to unlock full investment details.
+                                            </p>
+                                            <Link
+                                                href="/dashboard"
+                                                className="px-6 py-2 bg-[#1C5244] text-white rounded-lg font-semibold hover:bg-[#143d33] transition-colors"
+                                            >
+                                                Sign NDA →
+                                            </Link>
+                                        </div>
+                                    )}
+
+                                    {/* Masked Data Content */}
+                                    <div className={isLockedOut ? "blur-md select-none" : ""}>
+                                        <p className="text-gray-600 mb-6">
+                                            {isLockedOut
+                                                ? "This is a secure placeholder description. Sign in and complete your NDA to view the full investment thesis, operational metrics, and comprehensive asset overview."
+                                                : opp.description}
+                                        </p>
 
                                         {/* Amount Badge */}
                                         <div className="inline-block bg-[#1C5244]/10 rounded-xl px-6 py-4 mb-6">
@@ -226,29 +248,22 @@ export default function OpportunitiesList() {
                                                 Investment Amount
                                             </div>
                                             <div className="text-3xl font-bold text-[#1C5244]">
-                                                {opp.amount}
+                                                {isLockedOut ? "$X,XXX,XXX" : opp.amount}
                                             </div>
                                         </div>
 
-                                        {/* Features */}
+                                        {/* Masked Features */}
                                         <ul className="space-y-3 mb-8">
-                                            {opp.features.map((feature) => (
+                                            {(isLockedOut
+                                                ? ["Confidential operational detail", "Secured structural advantage", "Protected financial metric"]
+                                                : opp.features
+                                            ).map((feature, idx) => (
                                                 <li
-                                                    key={feature}
+                                                    key={idx}
                                                     className="flex items-center gap-3 text-gray-600"
                                                 >
-                                                    <svg
-                                                        className="w-5 h-5 text-[#1C5244] flex-shrink-0"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        viewBox="0 0 24 24"
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth={2}
-                                                            d="M5 13l4 4L19 7"
-                                                        />
+                                                    <svg className="w-5 h-5 text-[#1C5244] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                                     </svg>
                                                     {feature}
                                                 </li>
@@ -256,24 +271,12 @@ export default function OpportunitiesList() {
                                         </ul>
 
                                         <Link
-                                            // href={`/opportunities/${opp.id}`}
                                             href={`/contact`}
                                             className="inline-flex items-center gap-2 bg-[#F8AB1D] text-[#333333] px-8 py-4 rounded-xl font-semibold hover:bg-[#d99310] transition-all hover:-translate-y-1"
                                         >
-                                            {/* View Details */}
                                             Express Interest
-                                            <svg
-                                                className="w-5 h-5"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M17 8l4 4m0 0l-4 4m4-4H3"
-                                                />
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                                             </svg>
                                         </Link>
                                     </div>
@@ -287,7 +290,7 @@ export default function OpportunitiesList() {
             <AuthModal
                 isOpen={isAuthModalOpen}
                 onClose={() => setIsAuthModalOpen(false)}
-                onLoginSuccess={() => { }} // Controlled globally now
+                onLoginSuccess={() => { }}
             />
         </section>
     );

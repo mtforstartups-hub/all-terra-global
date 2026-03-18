@@ -9,6 +9,8 @@ import { authClient } from "@/lib/auth-client";
 export default function Opportunities() {
   const { data: session, isPending } = authClient.useSession();
   const isLoggedIn = !!session;
+  const user = session?.user;
+  const hasSignedNda = user?.hasSignedNda;
 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const opportunities = [
@@ -199,6 +201,7 @@ export default function Opportunities() {
                 {/* Stats & Content - Blurred when not logged in */}
                 <div className="relative">
                   {/* Blur overlay when not logged in */}
+                  {/* Overlay: Not logged in */}
                   {!isLoggedIn && (
                     <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-b-3xl">
                       <svg
@@ -229,9 +232,40 @@ export default function Opportunities() {
                     </div>
                   )}
 
+                  {/* Overlay: Logged in but NDA not signed */}
+                  {isLoggedIn && !hasSignedNda && (
+                    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/85 backdrop-blur-sm rounded-b-3xl">
+                      <svg
+                        className="w-12 h-12 text-[#F8AB1D] mb-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
+                      </svg>
+                      <p className="text-secondary font-semibold mb-2">
+                        NDA Signature Required
+                      </p>
+                      <p className="text-gray-500 text-sm mb-4 text-center px-4">
+                        Please sign the Non-Disclosure Agreement to unlock full investment details.
+                      </p>
+                      <a
+                        href="/dashboard"
+                        className="px-6 py-2 bg-[#F8AB1D] text-[#1C5244] rounded-lg font-semibold hover:bg-yellow-500 transition-colors"
+                      >
+                        Sign NDA →
+                      </a>
+                    </div>
+                  )}
+
                   {/* Stats - with blur when not logged in */}
                   <div
-                    className={`grid grid-cols-3 divide-x divide-gray-100 bg-gray-50 ${!isLoggedIn ? "blur-md select-none" : ""}`}
+                    className={`grid grid-cols-3 divide-x divide-gray-100 bg-gray-50 ${!isLoggedIn || !hasSignedNda ? "blur-md select-none" : ""}`}
                   >
                     <div className="p-4 text-center">
                       <div className="text-lg font-bold text-[#1C5244]">
@@ -255,7 +289,7 @@ export default function Opportunities() {
 
                   {/* Content - with blur when not logged in */}
                   <div
-                    className={`p-6 ${!isLoggedIn ? "blur-md select-none" : ""}`}
+                    className={`p-6 ${!isLoggedIn || !hasSignedNda ? "blur-md select-none" : ""}`}
                   >
                     <p className="text-gray-600 text-sm mb-4 leading-relaxed">
                       {opp.description}
@@ -321,7 +355,7 @@ export default function Opportunities() {
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
-        onLoginSuccess={() => {}} // State now comes from Better Auth hook!
+        onLoginSuccess={() => { }} // State now comes from Better Auth hook!
       />
     </section>
   );
