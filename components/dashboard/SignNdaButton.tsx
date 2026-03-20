@@ -40,7 +40,7 @@ export default function NdaModal({ userEmail }: NdaModalProps) {
     setError("");
 
     try {
-      const response = await fetch("/api/docusign/test", {
+      const response = await fetch("/api/docusign/sign-nda", {
         method: "POST",
       });
 
