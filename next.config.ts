@@ -11,7 +11,6 @@ const nextConfig: NextConfig = {
     ],
     qualities: [60, 75],
   },
-
 };
 
 export default nextConfig;

@@ -2,7 +2,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import NdaModal from "@/components/dashboard/NdaModal";
+import NdaModal from "@/components/dashboard/SignNdaButton";
 import PageHero from "@/components/shared/PageHero";
 
 export default async function DashboardPage() {
@@ -16,15 +16,6 @@ export default async function DashboardPage() {
 
   const user = session.user;
   const hasSignedNda = user.hasSignedNda;
-
-  const initials = user.name
-    ? user.name
-      .split(" ")
-      .map((n: string) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2)
-    : "U";
 
   return (
     <div className=" ">
@@ -43,7 +34,7 @@ export default async function DashboardPage() {
       <PageHero
         label="Dashboard"
         title={`Welcome back, ${user.name?.split(" ")[0] ?? "Investor"}`}
-        description="Here&apos;s your investment overview for today."
+        description="Here's your investment overview for today."
         backgroundImage="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=2000&q=80"
         imageAlt="Modern architecture"
       />
