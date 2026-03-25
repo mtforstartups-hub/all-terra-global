@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, ArrowLeft } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
-import { redirect } from "next/navigation";
+// import { redirect } from "next/navigation";
 import "react-phone-number-input/style.css";
 import PhoneInput, { Value } from "react-phone-number-input";
 
@@ -79,22 +79,23 @@ export default function AuthModal({
         email,
         password,
         name: fullname,
-        // Pass extra fields if your authClient is configured to accept them
-        // company,
-        // phone,
-        // investmentInterest,
-        // investmentAmount,
+        company,
+        phone,
+        investmentInterest,
+        investmentAmount,
       });
 
       if (error) {
         setErrorMsg(error.message || "Registration failed.");
       } else {
-        setSuccessMsg("Registration successful! Logging you in...");
+        setSuccessMsg(
+          "Registration successful! Please check your email to verify your account.",
+        );
         setTimeout(() => {
           onLoginSuccess();
           onClose();
         }, 4000);
-        redirect("/dashboard");
+        // redirect("/dashboard");
       }
     } else if (activeTab === "login") {
       const { error } = await authClient.signIn.email({ email, password });
@@ -287,7 +288,7 @@ export default function AuthModal({
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-1">
                             <label className="text-sm font-medium text-gray-700">
-                              Interest
+                              Sectors of Interest
                             </label>
                             <select
                               name="investment_interest"

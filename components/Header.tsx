@@ -41,7 +41,9 @@ export default function Header() {
     <header
       ref={headerRef}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? "bg-white/95 backdrop-blur-md shadow-lg" : "bg-transparent"
+        isScrolled || pathname === "/reset-password"
+          ? "bg-white/95 backdrop-blur-md shadow-lg"
+          : "bg-transparent"
       }`}
     >
       <ScrollProgressBar />
@@ -53,7 +55,7 @@ export default function Header() {
             <div className="w-16 h-16 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-xl">
                 <Image
-                  src={`${isScrolled ? "/logo-transparent.png" : "/logo-white.png"}`}
+                  src={`${isScrolled || pathname === "/reset-password" ? "/logo-transparent.png" : "/logo-white.png"}`}
                   alt="All Terra Logo"
                   width={100}
                   height={100}
@@ -64,7 +66,9 @@ export default function Header() {
             </div>
             <span
               className={`text-2xl font-bold transition-colors ${
-                isScrolled ? "text-secondary" : "text-white"
+                isScrolled || pathname === "/reset-password"
+                  ? "text-secondary"
+                  : "text-white"
               }`}
             >
               {/* All Terra */}
@@ -82,7 +86,7 @@ export default function Header() {
                   className={`text-sm font-medium transition-colors relative group ${
                     isActive
                       ? "text-[#F8AB1D]"
-                      : isScrolled
+                      : isScrolled || pathname === "/reset-password"
                         ? "text-secondary hover:text-[#F8AB1D]"
                         : "text-white hover:text-[#F8AB1D]"
                   }`}
@@ -119,7 +123,7 @@ export default function Header() {
                   <button
                     onClick={openAuthModal}
                     className={`px-5 py-1.75 rounded-lg font-semibold text-sm border-2 transition-all hover:-translate-y-0.5 ${
-                      isScrolled
+                      isScrolled || pathname === "/reset-password"
                         ? "border-secondary text-secondary hover:bg-secondary hover:text-white"
                         : "border-white text-white hover:bg-white hover:text-secondary"
                     }`}
@@ -145,7 +149,9 @@ export default function Header() {
           >
             <svg
               className={`w-6 h-6 transition-colors ${
-                isScrolled ? "text-secondary" : "text-white"
+                isScrolled || pathname === "/reset-password"
+                  ? "text-secondary"
+                  : "text-white"
               }`}
               fill="none"
               stroke="currentColor"
