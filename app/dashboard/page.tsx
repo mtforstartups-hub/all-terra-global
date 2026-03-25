@@ -17,11 +17,11 @@ export default async function DashboardPage() {
   const hasSignedNda = user.hasSignedNda;
   const initials = user.name
     ? user.name
-      .split(" ")
-      .map((n: string) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2)
+        .split(" ")
+        .map((n: string) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
     : "U";
 
   // ── Stub data for preview ─────────────────────────────────────────────
@@ -29,7 +29,7 @@ export default async function DashboardPage() {
   //   id: "preview",
   //   name: "John Doe",
   //   email: "johndoe@allterraglobal.com",
-  //   hasSignedNda: true,
+  //   hasSignedNda: false,
   // };
   // const hasSignedNda = user.hasSignedNda;
   // const initials = "JD";
@@ -48,7 +48,11 @@ export default async function DashboardPage() {
       )}
 
       {/* ── Dashboard Layout ────────────────────────────────────────────── */}
-      <div className={!hasSignedNda ? "blur-md pointer-events-none select-none" : ""}>
+      <div
+        className={
+          !hasSignedNda ? "blur-md pointer-events-none select-none" : ""
+        }
+      >
         <DashboardClient
           userName={user.name ?? "Investor"}
           userEmail={user.email ?? ""}

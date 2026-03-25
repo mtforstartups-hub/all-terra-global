@@ -3,7 +3,6 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { signUserNda } from "@/app/actions";
 
 interface NdaModalProps {
   userId: string;
@@ -29,23 +28,73 @@ export default function NdaModal({
     signature.trim().length > 0 &&
     address.trim().length > 0;
 
-  const handleSign = async () => {
-    if (!isFormValid) {
-      setError("Please fill in all required fields before signing.");
-      return;
-    }
+  // const handleSign = async () => {
+  //   if (!isFormValid) {
+  //     setError("Please fill in all required fields.");
+  //     return;
+  //   }
 
+  //   setIsPending(true);
+  //   setError("");
+
+  //   try {
+  //     const response = await fetch("/api/sign-native-nda", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         fullName,
+  //         signature,
+  //         address,
+  //       }),
+  //     });
+
+  //     const data = await response.json();
+
+  //     if (data.success) {
+  //       window.location.reload();
+  //     } else {
+  //       setError(data.error || "Failed to sign NDA.");
+  //       setIsPending(false);
+  //     }
+  //   } catch (err) {
+  //     setError("A network error occurred.");
+  //     setIsPending(false);
+  //   }
+  // };
+
+  const handleSign = async () => {
+    // ... validation ...
     setIsPending(true);
     setError("");
 
-    const result = await signUserNda(userId, userEmail, userName);
+    try {
+      const response = await fetch("/api/sign-native-nda", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ signature, address, fullName }),
+      });
 
-    if (!result.success) {
-      setError("Something went wrong. Please try again.");
+      if (response.ok) {
+        // 1. Tell JavaScript this is a file (Blob)
+        const blob = await response.blob();
+
+        // 2. Create a temporary local URL for this file in the browser's memory
+        const pdfUrl = window.URL.createObjectURL(blob);
+
+        // 3. Open the PDF in a new browser tab so you can look at it
+        window.open(pdfUrl, "_blank");
+
+        setIsPending(false);
+      } else {
+        // If it's not OK, it's probably our 500 JSON error
+        const data = await response.json();
+        setError(data.error || "Failed to generate PDF.");
+        setIsPending(false);
+      }
+    } catch (err) {
+      setError("A network error occurred.");
       setIsPending(false);
     }
-    // If successful, the server action revalidates the path,
-    // the page will refresh automatically, and the modal will vanish!
   };
 
   const inputClass =
@@ -55,7 +104,7 @@ export default function NdaModal({
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden"
+      className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full overflow-hidden"
     >
       {/* Header */}
       <div className="bg-[#1C5244] p-6 text-white">
@@ -67,7 +116,7 @@ export default function NdaModal({
 
       <div className="p-6 space-y-5">
         {/* NDA Text */}
-        <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 h-48 overflow-y-auto text-sm text-gray-700">
+        {/* <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 h-48 overflow-y-auto text-sm text-gray-700">
           <h3 className="font-bold text-lg mb-2">NON-DISCLOSURE AGREEMENT</h3>
           <p className="mb-2">This is a legally binding agreement...</p>
           <p className="mb-2">
@@ -75,7 +124,14 @@ export default function NdaModal({
             materials, financial data, and platform strategies strictly
             confidential.
           </p>
-          {/* Put your actual NDA text here */}
+          
+        </div> */}
+        <div className="h-64 w-full mb-4 border border-gray-200 rounded-lg overflow-hidden">
+          <iframe
+            src="/NDA_ALLTERRA_GLOBAL.pdf"
+            className="w-full h-full"
+            title="Non-Disclosure Agreement"
+          />
         </div>
 
         {/* Signatory Fields */}
