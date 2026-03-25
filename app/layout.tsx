@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Montserrat, IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
+import { AuthModalProvider } from "@/context/AuthModalContext";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -30,7 +31,7 @@ export default function RootLayout({
       <body
         className={`${montserrat.variable} ${ibmPlexSans.variable} antialiased`}
       >
-        {children}
+        <AuthModalProvider>{children}</AuthModalProvider>
       </body>
     </html>
   );

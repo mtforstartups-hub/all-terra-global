@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import TiltCard3D from "../TiltCard3D";
-import AuthModal from "../shared/AuthModal";
 import { authClient } from "@/lib/auth-client";
+import { useAuthModal } from "@/context/AuthModalContext"; // 👈 import hook
 
 export default function Opportunities() {
   const { data: session, isPending } = authClient.useSession();
@@ -12,7 +11,8 @@ export default function Opportunities() {
   const user = session?.user;
   const hasSignedNda = user?.hasSignedNda;
 
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const { openAuthModal } = useAuthModal(); // 👈 use hook — no local modal state needed
+
   const opportunities = [
     {
       title: "Mining Investment",
@@ -115,8 +115,6 @@ export default function Opportunities() {
     },
   ];
 
-  // console.log("Authed user: ", session);
-
   return (
     <section id="opportunities" className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -132,7 +130,7 @@ export default function Opportunities() {
             High-yield, asset-backed investment opportunities across mining,
             real estate, and financing sectors
           </p>
-          {/* Auth Display for Demo Options */}
+          {/* Auth Display */}
           <div className="flex justify-center items-center gap-4">
             {isPending ? (
               <span className="text-gray-500 text-sm">Loading session...</span>
@@ -145,7 +143,7 @@ export default function Opportunities() {
               </button>
             ) : (
               <button
-                onClick={() => setIsAuthModalOpen(true)}
+                onClick={openAuthModal} // 👈 opens shared modal via context
                 className="px-4 py-2 rounded-full text-sm font-medium transition-all bg-gray-100 text-gray-600 hover:bg-gray-200"
               >
                 🔒 Not Logged In (Click to Login)
@@ -168,7 +166,6 @@ export default function Opportunities() {
                 <div
                   className={`bg-linear-to-r ${opp.gradient} p-6 relative overflow-hidden`}
                 >
-                  {/* Floating Icon */}
                   <div
                     className="absolute -top-2 -right-2 w-20 h-20 bg-white/10 rounded-full flex items-center justify-center"
                     style={{ transform: "translateZ(30px)" }}
@@ -198,9 +195,8 @@ export default function Opportunities() {
                   </p>
                 </div>
 
-                {/* Stats & Content - Blurred when not logged in */}
+                {/* Stats & Content */}
                 <div className="relative">
-                  {/* Blur overlay when not logged in */}
                   {/* Overlay: Not logged in */}
                   {!isLoggedIn && (
                     <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-b-3xl">
@@ -224,7 +220,7 @@ export default function Opportunities() {
                         Full investment details available after authentication
                       </p>
                       <button
-                        onClick={() => setIsAuthModalOpen(true)}
+                        onClick={openAuthModal} // 👈 opens shared modal via context
                         className="px-6 py-2 bg-[#1C5244] text-white rounded-lg font-semibold hover:bg-primary-dark transition-colors"
                       >
                         Login
@@ -252,7 +248,8 @@ export default function Opportunities() {
                         NDA Signature Required
                       </p>
                       <p className="text-gray-500 text-sm mb-4 text-center px-4">
-                        Please sign the Non-Disclosure Agreement to unlock full investment details.
+                        Please sign the Non-Disclosure Agreement to unlock full
+                        investment details.
                       </p>
                       <a
                         href="/dashboard"
@@ -263,9 +260,11 @@ export default function Opportunities() {
                     </div>
                   )}
 
-                  {/* Stats - with blur when not logged in */}
+                  {/* Stats */}
                   <div
-                    className={`grid grid-cols-3 divide-x divide-gray-100 bg-gray-50 ${!isLoggedIn || !hasSignedNda ? "blur-md select-none" : ""}`}
+                    className={`grid grid-cols-3 divide-x divide-gray-100 bg-gray-50 ${
+                      !isLoggedIn || !hasSignedNda ? "blur-md select-none" : ""
+                    }`}
                   >
                     <div className="p-4 text-center">
                       <div className="text-lg font-bold text-[#1C5244]">
@@ -287,7 +286,7 @@ export default function Opportunities() {
                     </div>
                   </div>
 
-                  {/* Content - with blur when not logged in */}
+                  {/* Content */}
                   <div
                     className={`p-6 ${!isLoggedIn || !hasSignedNda ? "blur-md select-none" : ""}`}
                   >
@@ -351,12 +350,7 @@ export default function Opportunities() {
           </div>
         </TiltCard3D>
       </div>
-
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        onLoginSuccess={() => { }} // State now comes from Better Auth hook!
-      />
+      {/* AuthModal removed — now rendered once in AuthModalProvider */}
     </section>
   );
 }

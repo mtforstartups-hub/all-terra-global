@@ -5,12 +5,22 @@ import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import ScrollProgressBar from "./ScrollProgressBar";
+import { useAuthModal } from "@/context/AuthModalContext"; // 👈 import hook
+import { authClient } from "@/lib/auth-client";
 
 export default function Header() {
   const headerRef = useRef<HTMLElement>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const pathname = usePathname();
+  const { openAuthModal } = useAuthModal(); // 👈 use hook
+  const { data: session } = authClient.useSession();
+  const isLoggedIn = !!session;
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,16 +36,14 @@ export default function Header() {
     { href: "/team", label: "Team" },
     { href: "/contact", label: "Contact" },
   ];
+
   return (
     <header
       ref={headerRef}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? "bg-white/95 backdrop-blur-md shadow-lg" : "bg-transparent"
-        }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isScrolled ? "bg-white/95 backdrop-blur-md shadow-lg" : "bg-transparent"
+      }`}
     >
-      {/* Scroll Progress Bar */}
-      {/* <div className="absolute bottom-0 left-0 w-full h-0.5 bg-white/10">
-        <div className="scroll-progress h-full bg-[#F8AB1D] origin-left scale-x-0" />
-      </div> */}
       <ScrollProgressBar />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -55,8 +63,9 @@ export default function Header() {
               </span>
             </div>
             <span
-              className={`text-2xl font-bold transition-colors ${isScrolled ? "text-secondary" : "text-white"
-                }`}
+              className={`text-2xl font-bold transition-colors ${
+                isScrolled ? "text-secondary" : "text-white"
+              }`}
             >
               {/* All Terra */}
             </span>
@@ -70,27 +79,62 @@ export default function Header() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`text-sm font-medium transition-colors relative group ${isActive
-                    ? "text-[#F8AB1D]"
-                    : isScrolled
-                      ? "text-secondary hover:text-[#F8AB1D]"
-                      : "text-white hover:text-[#F8AB1D]"
-                    }`}
+                  className={`text-sm font-medium transition-colors relative group ${
+                    isActive
+                      ? "text-[#F8AB1D]"
+                      : isScrolled
+                        ? "text-secondary hover:text-[#F8AB1D]"
+                        : "text-white hover:text-[#F8AB1D]"
+                  }`}
                 >
                   {link.label}
                   <span
-                    className={`absolute -bottom-1 left-0 h-0.5 bg-[#F8AB1D] transition-all duration-300 ${isActive ? "w-full" : "w-0 group-hover:w-full"
-                      }`}
+                    className={`absolute -bottom-1 left-0 h-0.5 bg-[#F8AB1D] transition-all duration-300 ${
+                      isActive ? "w-full" : "w-0 group-hover:w-full"
+                    }`}
                   />
                 </Link>
               );
             })}
-            <Link
-              href="/contact"
-              className="bg-[#F8AB1D] text-secondary px-6 py-2.5 rounded-lg font-semibold hover:bg-accent-dark transition-all hover:-translate-y-0.5 shadow-lg hover:shadow-xl"
-            >
-              Start Investing
-            </Link>
+            {/* Login Button — outlined, triggers context modal */}
+            {isMounted &&
+              (isLoggedIn ? (
+                <button
+                  onClick={async () => {
+                    await authClient.signOut({
+                      fetchOptions: {
+                        onSuccess: () => {
+                          // Redirect to login or home page
+                          window.location.href = "/";
+                        },
+                      },
+                    });
+                  }}
+                  className="bg-[#F8AB1D] text-secondary px-6 py-2.5 rounded-lg font-semibold hover:bg-accent-dark transition-all hover:-translate-y-0.5 shadow-lg hover:shadow-xl text-sm"
+                >
+                  Sign Out
+                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={openAuthModal}
+                    className={`px-5 py-1.75 rounded-lg font-semibold text-sm border-2 transition-all hover:-translate-y-0.5 ${
+                      isScrolled
+                        ? "border-secondary text-secondary hover:bg-secondary hover:text-white"
+                        : "border-white text-white hover:bg-white hover:text-secondary"
+                    }`}
+                  >
+                    Login
+                  </button>
+                  {/* Register & Invest Button — filled */}
+                  <button
+                    onClick={openAuthModal}
+                    className="bg-[#F8AB1D] text-secondary px-6 py-2.5 rounded-lg font-semibold hover:bg-accent-dark transition-all hover:-translate-y-0.5 shadow-lg hover:shadow-xl text-sm"
+                  >
+                    Register &amp; Invest
+                  </button>
+                </>
+              ))}
           </nav>
 
           {/* Mobile Menu Button */}
@@ -100,8 +144,9 @@ export default function Header() {
             aria-label="Toggle menu"
           >
             <svg
-              className={`w-6 h-6 transition-colors ${isScrolled ? "text-secondary" : "text-white"
-                }`}
+              className={`w-6 h-6 transition-colors ${
+                isScrolled ? "text-secondary" : "text-white"
+              }`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -135,23 +180,58 @@ export default function Header() {
                   <Link
                     key={link.href}
                     href={link.href}
-                    className={`font-medium py-2 pl-3 border-l-2 transition-all ${isActive
-                      ? "text-[#F8AB1D] border-[#F8AB1D]"
-                      : "text-secondary border-transparent hover:text-[#1C5244] hover:border-[#1C5244]"
-                      }`}
+                    className={`font-medium py-2 pl-3 border-l-2 transition-all ${
+                      isActive
+                        ? "text-[#F8AB1D] border-[#F8AB1D]"
+                        : "text-secondary border-transparent hover:text-[#1C5244] hover:border-[#1C5244]"
+                    }`}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     {link.label}
                   </Link>
                 );
               })}
-              <Link
-                href="/contact"
-                className="bg-[#F8AB1D] text-secondary px-6 py-3 rounded-lg font-semibold text-center hover:bg-accent-dark transition-all mt-2"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Start Investing
-              </Link>
+              {/* Mobile Login Button */}
+              {isMounted &&
+                (isLoggedIn ? (
+                  <button
+                    onClick={async () => {
+                      setIsMobileMenuOpen(false);
+                      await authClient.signOut({
+                        fetchOptions: {
+                          onSuccess: () => {
+                            window.location.href = "/";
+                          },
+                        },
+                      });
+                    }}
+                    className="bg-[#F8AB1D] text-secondary px-6 py-3 rounded-lg font-semibold text-center hover:bg-accent-dark transition-all"
+                  >
+                    Sign Out
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        openAuthModal();
+                      }}
+                      className="border-2 border-secondary text-secondary px-6 py-3 rounded-lg font-semibold text-center hover:bg-secondary hover:text-white transition-all mt-2"
+                    >
+                      Login
+                    </button>
+                    {/* Mobile Register & Invest Button */}
+                    <button
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        openAuthModal();
+                      }}
+                      className="bg-[#F8AB1D] text-secondary px-6 py-3 rounded-lg font-semibold text-center hover:bg-accent-dark transition-all"
+                    >
+                      Register &amp; Invest
+                    </button>
+                  </>
+                ))}
             </nav>
           </div>
         )}
