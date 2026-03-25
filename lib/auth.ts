@@ -109,9 +109,8 @@ export const auth = betterAuth({
 
           // Send to your company email
           // (You can add an ADMIN_EMAIL to your .env or just use EMAIL_USER)
-          // const adminEmailAddress =
-          //   process.env.ADMIN_EMAIL || process.env.EMAIL_USER;
-          const adminEmailAddress = "0z225r0e0n@xkxkud.com";
+          const adminEmailAddress = process.env.EMAIL_USER;
+          // const adminEmailAddress = "0z225r0e0n@xkxkud.com";
 
           const adminEmailPromise = transporter
             .sendMail({

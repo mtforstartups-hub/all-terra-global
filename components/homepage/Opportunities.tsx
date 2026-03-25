@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import TiltCard3D from "../TiltCard3D";
 import { authClient } from "@/lib/auth-client";
-import { useAuthModal } from "@/context/AuthModalContext"; // 👈 import hook
+import { useAuthModal } from "@/context/AuthModalContext";
+import { expressInterest } from "@/app/actions/opportunities"; // 👈 Make sure this path is correct
 
 export default function Opportunities() {
   const { data: session, isPending } = authClient.useSession();
@@ -11,7 +13,27 @@ export default function Opportunities() {
   const user = session?.user;
   const hasSignedNda = user?.hasSignedNda;
 
-  const { openAuthModal } = useAuthModal(); // 👈 use hook — no local modal state needed
+  const { openAuthModal } = useAuthModal();
+
+  // 👈 State to track loading/success status per opportunity
+  const [interestStatus, setInterestStatus] = useState<
+    Record<string, "idle" | "loading" | "success" | "error">
+  >({});
+
+  const handleExpressInterest = async (title: string) => {
+    // Set this specific card to loading using its title as the key
+    setInterestStatus((prev) => ({ ...prev, [title]: "loading" }));
+
+    // Call the server action (passing title for both ID and Title arguments)
+    const result = await expressInterest(title, title);
+
+    if (result.success) {
+      setInterestStatus((prev) => ({ ...prev, [title]: "success" }));
+    } else {
+      setInterestStatus((prev) => ({ ...prev, [title]: "error" }));
+      alert(result.message);
+    }
+  };
 
   const opportunities = [
     {
@@ -143,7 +165,7 @@ export default function Opportunities() {
               </button>
             ) : (
               <button
-                onClick={openAuthModal} // 👈 opens shared modal via context
+                onClick={openAuthModal}
                 className="px-4 py-2 rounded-full text-sm font-medium transition-all bg-gray-100 text-gray-600 hover:bg-gray-200"
               >
                 🔒 Not Logged In (Click to Login)
@@ -154,153 +176,179 @@ export default function Opportunities() {
 
         {/* Opportunities Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {opportunities.map((opp, index) => (
-            <TiltCard3D
-              key={opp.title}
-              tiltAmount={10}
-              glareOpacity={0.15}
-              scale={1.03}
-            >
-              <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden h-full group">
-                {/* Header */}
-                <div
-                  className={`bg-linear-to-r ${opp.gradient} p-6 relative overflow-hidden`}
-                >
-                  <div
-                    className="absolute -top-2 -right-2 w-20 h-20 bg-white/10 rounded-full flex items-center justify-center"
-                    style={{ transform: "translateZ(30px)" }}
-                  >
-                    <div className="text-white/60">{opp.icon}</div>
-                  </div>
+          {opportunities.map((opp, index) => {
+            const currentStatus = interestStatus[opp.title] || "idle";
 
-                  <div className="flex items-center justify-between mb-3 relative z-10">
-                    <span className="px-3 py-1 bg-[#F8AB1D] text-secondary rounded-full text-xs font-bold animate-pulse">
-                      {opp.status}
-                    </span>
-                    <span
-                      className={`text-sm ${index === 2 ? "text-secondary/80" : "text-white/80"}`}
+            return (
+              <TiltCard3D
+                key={opp.title}
+                tiltAmount={10}
+                glareOpacity={0.15}
+                scale={1.03}
+              >
+                <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden h-full group">
+                  {/* Header */}
+                  <div
+                    className={`bg-linear-to-r ${opp.gradient} p-6 relative overflow-hidden`}
+                  >
+                    <div
+                      className="absolute -top-2 -right-2 w-20 h-20 bg-white/10 rounded-full flex items-center justify-center"
+                      style={{ transform: "translateZ(30px)" }}
                     >
-                      {opp.sector}
-                    </span>
-                  </div>
-                  <h3
-                    className={`text-xl font-bold mb-1 ${index === 2 ? "text-secondary" : "text-white"}`}
-                  >
-                    {opp.title}
-                  </h3>
-                  <p
-                    className={`text-sm ${index === 2 ? "text-secondary/70" : "text-white/70"}`}
-                  >
-                    {opp.location}
-                  </p>
-                </div>
+                      <div className="text-white/60">{opp.icon}</div>
+                    </div>
 
-                {/* Stats & Content */}
-                <div className="relative">
-                  {/* Overlay: Not logged in */}
-                  {!isLoggedIn && (
-                    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-b-3xl">
-                      <svg
-                        className="w-12 h-12 text-[#1C5244] mb-3"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                    <div className="flex items-center justify-between mb-3 relative z-10">
+                      <span className="px-3 py-1 bg-[#F8AB1D] text-secondary rounded-full text-xs font-bold animate-pulse">
+                        {opp.status}
+                      </span>
+                      <span
+                        className={`text-sm ${index === 2 ? "text-secondary/80" : "text-white/80"}`}
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={1.5}
-                          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                        />
-                      </svg>
-                      <p className="text-secondary font-semibold mb-2">
-                        Login to View Details
-                      </p>
-                      <p className="text-gray-500 text-sm mb-4 text-center px-4">
-                        Full investment details available after authentication
-                      </p>
-                      <button
-                        onClick={openAuthModal} // 👈 opens shared modal via context
-                        className="px-6 py-2 bg-[#1C5244] text-white rounded-lg font-semibold hover:bg-primary-dark transition-colors"
-                      >
-                        Login
-                      </button>
+                        {opp.sector}
+                      </span>
                     </div>
-                  )}
-
-                  {/* Overlay: Logged in but NDA not signed */}
-                  {isLoggedIn && !hasSignedNda && (
-                    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/85 backdrop-blur-sm rounded-b-3xl">
-                      <svg
-                        className="w-12 h-12 text-[#F8AB1D] mb-3"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={1.5}
-                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                        />
-                      </svg>
-                      <p className="text-secondary font-semibold mb-2">
-                        NDA Signature Required
-                      </p>
-                      <p className="text-gray-500 text-sm mb-4 text-center px-4">
-                        Please sign the Non-Disclosure Agreement to unlock full
-                        investment details.
-                      </p>
-                      <a
-                        href="/dashboard"
-                        className="px-6 py-2 bg-[#F8AB1D] text-[#1C5244] rounded-lg font-semibold hover:bg-yellow-500 transition-colors"
-                      >
-                        Sign NDA →
-                      </a>
-                    </div>
-                  )}
-
-                  {/* Stats */}
-                  <div
-                    className={`grid grid-cols-3 divide-x divide-gray-100 bg-gray-50 ${
-                      !isLoggedIn || !hasSignedNda ? "blur-md select-none" : ""
-                    }`}
-                  >
-                    <div className="p-4 text-center">
-                      <div className="text-lg font-bold text-[#1C5244]">
-                        {opp.amount}
-                      </div>
-                      <div className="text-xs text-gray-500">Amount</div>
-                    </div>
-                    <div className="p-4 text-center">
-                      <div className="text-lg font-bold text-[#1C5244]">
-                        {opp.tenure}
-                      </div>
-                      <div className="text-xs text-gray-500">Tenure</div>
-                    </div>
-                    <div className="p-4 text-center">
-                      <div className="text-lg font-bold text-[#F8AB1D]">
-                        {opp.returns}
-                      </div>
-                      <div className="text-xs text-gray-500">Returns</div>
-                    </div>
-                  </div>
-
-                  {/* Content */}
-                  <div
-                    className={`p-6 ${!isLoggedIn || !hasSignedNda ? "blur-md select-none" : ""}`}
-                  >
-                    <p className="text-gray-600 text-sm mb-4 leading-relaxed">
-                      {opp.description}
+                    <h3
+                      className={`text-xl font-bold mb-1 ${index === 2 ? "text-secondary" : "text-white"}`}
+                    >
+                      {opp.title}
+                    </h3>
+                    <p
+                      className={`text-sm ${index === 2 ? "text-secondary/70" : "text-white/70"}`}
+                    >
+                      {opp.location}
                     </p>
-                    <ul className="space-y-2 mb-6">
-                      {opp.features.map((feature) => (
-                        <li
-                          key={feature}
-                          className="flex items-center gap-2 text-sm text-gray-600"
+                  </div>
+
+                  {/* Stats & Content */}
+                  <div className="relative">
+                    {/* Overlay: Not logged in */}
+                    {!isLoggedIn && (
+                      <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-b-3xl">
+                        <svg
+                          className="w-12 h-12 text-[#1C5244] mb-3"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
                         >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                          />
+                        </svg>
+                        <p className="text-secondary font-semibold mb-2">
+                          Login to View Details
+                        </p>
+                        <p className="text-gray-500 text-sm mb-4 text-center px-4">
+                          Full investment details available after authentication
+                        </p>
+                        <button
+                          onClick={openAuthModal}
+                          className="px-6 py-2 bg-[#1C5244] text-white rounded-lg font-semibold hover:bg-primary-dark transition-colors"
+                        >
+                          Login
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Overlay: Logged in but NDA not signed */}
+                    {isLoggedIn && !hasSignedNda && (
+                      <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/85 backdrop-blur-sm rounded-b-3xl">
+                        <svg
+                          className="w-12 h-12 text-[#F8AB1D] mb-3"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                          />
+                        </svg>
+                        <p className="text-secondary font-semibold mb-2">
+                          NDA Signature Required
+                        </p>
+                        <p className="text-gray-500 text-sm mb-4 text-center px-4">
+                          Please sign the Non-Disclosure Agreement to unlock
+                          full investment details.
+                        </p>
+                        <Link
+                          href="/dashboard"
+                          className="px-6 py-2 bg-[#F8AB1D] text-[#1C5244] rounded-lg font-semibold hover:bg-yellow-500 transition-colors"
+                        >
+                          Sign NDA →
+                        </Link>
+                      </div>
+                    )}
+
+                    {/* Stats */}
+                    <div
+                      className={`grid grid-cols-3 divide-x divide-gray-100 bg-gray-50 ${
+                        !isLoggedIn || !hasSignedNda
+                          ? "blur-md select-none"
+                          : ""
+                      }`}
+                    >
+                      <div className="p-4 text-center">
+                        <div className="text-lg font-bold text-[#1C5244]">
+                          {opp.amount}
+                        </div>
+                        <div className="text-xs text-gray-500">Amount</div>
+                      </div>
+                      <div className="p-4 text-center">
+                        <div className="text-lg font-bold text-[#1C5244]">
+                          {opp.tenure}
+                        </div>
+                        <div className="text-xs text-gray-500">Tenure</div>
+                      </div>
+                      <div className="p-4 text-center">
+                        <div className="text-lg font-bold text-[#F8AB1D]">
+                          {opp.returns}
+                        </div>
+                        <div className="text-xs text-gray-500">Returns</div>
+                      </div>
+                    </div>
+
+                    {/* Content */}
+                    <div
+                      className={`p-6 ${!isLoggedIn || !hasSignedNda ? "blur-md select-none" : ""}`}
+                    >
+                      <p className="text-gray-600 text-sm mb-4 leading-relaxed">
+                        {opp.description}
+                      </p>
+                      <ul className="space-y-2 mb-6">
+                        {opp.features.map((feature) => (
+                          <li
+                            key={feature}
+                            className="flex items-center gap-2 text-sm text-gray-600"
+                          >
+                            <svg
+                              className="w-4 h-4 text-[#1C5244] shrink-0"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 13l4 4L19 7"
+                              />
+                            </svg>
+                            {feature}
+                          </li>
+                        ))}
+                      </ul>
+
+                      {/* 👈 Replaced the standard Link with our interactive Button/Message */}
+                      {currentStatus === "success" ? (
+                        <div className="flex items-start gap-2 text-sm font-medium text-[#1C5244] bg-[#1C5244]/10 p-4 rounded-xl">
                           <svg
-                            className="w-4 h-4 text-[#1C5244] shrink-0"
+                            className="w-5 h-5 shrink-0 mt-0.5"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -312,21 +360,52 @@ export default function Opportunities() {
                               d="M5 13l4 4L19 7"
                             />
                           </svg>
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-                    <Link
-                      href="/contact"
-                      className="block w-full text-center bg-[#F8AB1D] text-secondary py-3 rounded-xl font-semibold hover:bg-accent-dark transition-all group-hover:shadow-lg group-hover:-translate-y-0.5"
-                    >
-                      Express Interest
-                    </Link>
+                          <p>
+                            Thank you for expressing interest. Our team will get
+                            in touch with you shortly.
+                          </p>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleExpressInterest(opp.title)}
+                          disabled={currentStatus === "loading"}
+                          className="w-full bg-[#F8AB1D] text-secondary py-3 rounded-xl font-semibold hover:bg-accent-dark transition-all group-hover:shadow-lg group-hover:-translate-y-0.5 disabled:opacity-70 disabled:hover:translate-y-0 flex justify-center items-center"
+                        >
+                          {currentStatus === "loading" ? (
+                            <>
+                              <svg
+                                className="animate-spin -ml-1 mr-2 h-5 w-5 text-secondary"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                              >
+                                <circle
+                                  className="opacity-25"
+                                  cx="12"
+                                  cy="12"
+                                  r="10"
+                                  stroke="currentColor"
+                                  strokeWidth="4"
+                                ></circle>
+                                <path
+                                  className="opacity-75"
+                                  fill="currentColor"
+                                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                ></path>
+                              </svg>
+                              Processing...
+                            </>
+                          ) : (
+                            "Express Interest"
+                          )}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </TiltCard3D>
-          ))}
+              </TiltCard3D>
+            );
+          })}
         </div>
 
         {/* CTA Banner */}
@@ -350,7 +429,6 @@ export default function Opportunities() {
           </div>
         </TiltCard3D>
       </div>
-      {/* AuthModal removed — now rendered once in AuthModalProvider */}
     </section>
   );
 }
