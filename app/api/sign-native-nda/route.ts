@@ -56,16 +56,16 @@ export async function POST(req: Request) {
     // 7. Send Email with the Stamped PDF attached
     // ... (Your Nodemailer code here)
 
-    return new NextResponse(pdfBytes, {
-      status: 200,
-      headers: {
-        "Content-Type": "application/pdf",
-        // 'inline' tells the browser to view it rather than download it
-        "Content-Disposition": 'inline; filename="debug-nda.pdf"',
-      },
-    });
+    // return new NextResponse(pdfBytes, {
+    //   status: 200,
+    //   headers: {
+    //     "Content-Type": "application/pdf",
 
-    // return NextResponse.json({ success: true });
+    //     "Content-Disposition": 'inline; filename="debug-nda.pdf"',
+    //   },
+    // });
+
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Native Signing Error:", error);
     return NextResponse.json(
