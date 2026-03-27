@@ -1,9 +1,17 @@
 "use server";
 
+import "dotenv/config";
 import { z } from "zod";
 import { grayscale, PDFDocument, rgb } from "pdf-lib";
 import fs from "fs/promises";
 import path from "path";
+import { connection, transporter } from "@/lib/auth";
+import {
+  getNdaAdminNotificationEmailHtml,
+  getNdaUserConfirmationEmailHtml,
+} from "@/lib/email-templates";
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 const formSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters."),
@@ -22,14 +30,13 @@ export type FormState = {
 };
 
 // --- PDF-LIB HELPER FUNCTION ---
-async function generateSignedPDF(
-  data: Record<string, string>,
-): Promise<string> {
-  // 1. Read your existing template from the public folder
+async function generateSignedPDF(data: Record<string, string>): Promise<{
+  base64: string;
+  dataUri: string;
+}> {
   const filePath = path.join(process.cwd(), "public", "main-template.pdf");
   const existingPdfBytes = await fs.readFile(filePath);
 
-  // 2. Load the document and get the first page
   const pdfDoc = await PDFDocument.load(existingPdfBytes);
   const pages = pdfDoc.getPages();
   const firstPage = pages[0];
@@ -46,20 +53,60 @@ async function generateSignedPDF(
     height: 40,
     borderColor: grayscale(0.5),
   });
-  lastPage.drawText(data.signature, {
-    x: 80,
-    y: 475,
-    size: 14,
-    // color: rgb(0, 0, 0.8),
+  lastPage.drawText(data.signature, { x: 80, y: 475, size: 14 });
+
+  const pdfBytes = await pdfDoc.save();
+  const base64 = Buffer.from(pdfBytes).toString("base64");
+
+  return {
+    base64,
+    dataUri: `data:application/pdf;base64,${base64}`,
+  };
+}
+
+// Email Sending After pdf sign
+async function sendNdaEmails(
+  data: Record<string, string>,
+  pdfBase64: string,
+): Promise<void> {
+  const signedAt = new Intl.DateTimeFormat("en-US", {
+    dateStyle: "long",
+    timeStyle: "short",
+  }).format(new Date());
+
+  const pdfAttachment = {
+    filename: "NDA-AllTerraGlobal-Signed.pdf",
+    content: pdfBase64,
+    encoding: "base64" as const,
+    contentType: "application/pdf",
+  };
+
+  // 1. Confirmation email → investor (with signed PDF attached)
+  await transporter.sendMail({
+    from: `All-Terra Global <${process.env.EMAIL_USER}>`,
+    to: data.email,
+    subject: "Your Signed NDA – All-Terra Global",
+    html: getNdaUserConfirmationEmailHtml(data.fullName),
+    attachments: [pdfAttachment],
   });
 
-  // 4. Save and convert to a Base64 Data URI so the frontend iframe can read it
-  const pdfBytes = await pdfDoc.save();
-  const base64Pdf = Buffer.from(pdfBytes).toString("base64");
-  return `data:application/pdf;base64,${base64Pdf}`;
+  // 2. Notification email → admin (with signed PDF attached)
+  await transporter.sendMail({
+    from: `All-Terra Global Portal <${process.env.EMAIL_USER}>`,
+    to: process.env.ADMIN_EMAIL,
+    subject: `NDA Signed – ${data.fullName}`,
+    html: getNdaAdminNotificationEmailHtml({
+      name: data.fullName,
+      email: data.email,
+      address: data.address,
+      signedAt,
+    }),
+    attachments: [pdfAttachment],
+  });
 }
 
 export async function pdfSign(
+  userEmail: string,
   prevState: FormState,
   formData: FormData,
 ): Promise<FormState> {
@@ -67,27 +114,31 @@ export async function pdfSign(
 
   try {
     const validatedData = formSchema.parse(rawData);
+    const finalData = {
+      ...validatedData,
+      email: userEmail,
+    };
+    const { base64, dataUri } = await generateSignedPDF(validatedData);
 
-    // Generate the PDF
-    const pdfUri = await generateSignedPDF(validatedData);
-
+    // ── Preview intent: just return the rendered PDF ──
     if (validatedData.intent === "preview") {
       return {
         success: true,
         message: "Preview generated successfully!",
         data: rawData,
-        pdfUri: pdfUri,
+        pdfUri: dataUri,
         hasPreviewed: true,
       };
     }
 
-    return {
-      success: true,
-      message: "Document signed successfully!",
-      data: rawData,
-      pdfUri: pdfUri,
-      hasPreviewed: true,
-    };
+    // ── Sign intent: send emails then redirect to dashboard ──
+    await sendNdaEmails(finalData, base64);
+
+    await connection.execute(
+      "UPDATE user SET hasSignedNda = true WHERE email = ?",
+      [userEmail],
+    );
+    revalidatePath("/dashboard");
   } catch (error) {
     if (error instanceof z.ZodError) {
       const fieldErrors: Record<string, string[]> = {};
@@ -109,13 +160,17 @@ export async function pdfSign(
       };
     }
 
-    console.error("Form submission error:", error);
+    console.error("Submission error:", error);
     return {
-      message: "An unexpected error occurred.",
+      message:
+        "Failed to finalize the agreement. Please try again or contact support.",
       success: false,
       data: rawData,
       hasPreviewed: prevState.hasPreviewed,
       pdfUri: prevState.pdfUri,
     };
   }
+
+  // Reached only on successful "sign" intent — redirect must be outside try/catch
+  redirect("/dashboard?event=signing_complete");
 }

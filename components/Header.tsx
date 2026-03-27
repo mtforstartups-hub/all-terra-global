@@ -5,22 +5,18 @@ import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import ScrollProgressBar from "./ScrollProgressBar";
-import { useAuthModal } from "@/context/AuthModalContext"; // 👈 import hook
+import { useAuthModal } from "@/context/AuthModalContext";
 import { authClient } from "@/lib/auth-client";
 
 export default function Header() {
   const headerRef = useRef<HTMLElement>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-  const pathname = usePathname();
-  const { openAuthModal } = useAuthModal(); // 👈 use hook
-  const { data: session } = authClient.useSession();
-  const isLoggedIn = !!session;
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  const pathname = usePathname();
+  const { openAuthModal } = useAuthModal();
+  const { data: session, isPending } = authClient.useSession();
+  const isLoggedIn = !!session;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -101,7 +97,7 @@ export default function Header() {
               );
             })}
             {/* Login Button — outlined, triggers context modal */}
-            {isMounted &&
+            {!isPending &&
               (isLoggedIn ? (
                 <button
                   onClick={async () => {
@@ -198,7 +194,7 @@ export default function Header() {
                 );
               })}
               {/* Mobile Login Button */}
-              {isMounted &&
+              {!isPending &&
                 (isLoggedIn ? (
                   <button
                     onClick={async () => {

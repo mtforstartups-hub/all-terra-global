@@ -5,7 +5,12 @@ import { auth } from "@/lib/auth";
 import NdaModal from "@/components/dashboard/SignNdaButton";
 import DashboardClient from "@/components/dashboard/DashboardClient";
 
-export default async function DashboardPage() {
+// search params can be removed when using docusign or other service
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ event?: string }>;
+}) {
   // ── Auth temporarily commented out for UI preview ────────────────────
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -15,6 +20,14 @@ export default async function DashboardPage() {
   }
   const user = session.user;
   const hasSignedNda = user.hasSignedNda;
+
+  // Resolve search params (only needed for the inbuild pdf signing)
+  const resolvedParams = await searchParams;
+  const isVerifying = resolvedParams.event === "signing_complete";
+
+  // Show the modal if they haven't signed, OR if they just returned from signing
+  // const showModal = !hasSignedNda || isVerifying;
+
   const initials = user.name
     ? user.name
         .split(" ")
@@ -43,6 +56,8 @@ export default async function DashboardPage() {
             userId={user.id}
             userEmail={user.email}
             userName={user.name}
+            isVerifying={isVerifying}
+            hasSignedNda={hasSignedNda}
           />
         </div>
       )}
