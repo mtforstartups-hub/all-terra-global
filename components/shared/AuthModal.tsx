@@ -27,8 +27,8 @@ const investmentOptions = [
 ];
 
 const amountOptions = [
-  "Under $100K",
-  "$100K - $250K",
+  // "Under $250K",
+  // "$100K - $250K",
   "$250K - $500K",
   "$500K - $1M",
   "Over $1M",

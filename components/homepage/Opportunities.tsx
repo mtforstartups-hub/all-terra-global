@@ -1,19 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import TiltCard3D from "../TiltCard3D";
 import { authClient } from "@/lib/auth-client";
 import { useAuthModal } from "@/context/AuthModalContext";
-import { expressInterest } from "@/app/actions/opportunities"; // 👈 Make sure this path is correct
+import { expressInterest } from "@/app/actions/opportunities";
+import {
+  Box,
+  Building,
+  Check,
+  CreditCard,
+  FileText,
+  Loader2,
+  Lock,
+} from "lucide-react";
 
 export default function Opportunities() {
   const { data: session, isPending } = authClient.useSession();
   const isLoggedIn = !!session;
   const user = session?.user;
   const hasSignedNda = user?.hasSignedNda;
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const { openAuthModal } = useAuthModal();
+  const isLoading = !mounted || isPending;
+  const isAuthorized = !isLoading && isLoggedIn && !!hasSignedNda;
 
   // 👈 State to track loading/success status per opportunity
   const [interestStatus, setInterestStatus] = useState<
@@ -21,11 +37,14 @@ export default function Opportunities() {
   >({});
 
   const handleExpressInterest = async (title: string) => {
-    // Set this specific card to loading using its title as the key
     setInterestStatus((prev) => ({ ...prev, [title]: "loading" }));
 
-    // Call the server action (passing title for both ID and Title arguments)
     const result = await expressInterest(title, title);
+    // const result = {
+    //   success: true,
+    //   message: "Successful",
+    // };
+    // await new Promise((resolve) => setTimeout(resolve, 8000));
 
     if (result.success) {
       setInterestStatus((prev) => ({ ...prev, [title]: "success" }));
@@ -52,21 +71,7 @@ export default function Opportunities() {
       ],
       description:
         "Operating gold mining concession with focus on dump ore and near-surface material. 1,000-1,500 TPD CIP processing plant.",
-      icon: (
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-          />
-        </svg>
-      ),
+      icon: <Box />,
       gradient: "from-[#1C5244] to-[#143d33]",
     },
     {
@@ -85,21 +90,7 @@ export default function Opportunities() {
       ],
       description:
         "Large-scale residential development on 9.52-hectare land parcel. 98 standalone plots with 3BHK/4BHK houses.",
-      icon: (
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-          />
-        </svg>
-      ),
+      icon: <Building />,
       gradient: "from-[#333333] to-[#1a1a1a]",
     },
     {
@@ -118,21 +109,7 @@ export default function Opportunities() {
       ],
       description:
         "Structured vendor and SME order financing within Zimbabwe's largest diversified business groups.",
-      icon: (
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
-          />
-        </svg>
-      ),
+      icon: <CreditCard />,
       gradient: "from-[#F8AB1D] to-[#d99310]",
     },
   ];
@@ -154,7 +131,7 @@ export default function Opportunities() {
           </p>
           {/* Auth Display */}
           <div className="flex justify-center items-center gap-4">
-            {isPending ? (
+            {isAuthorized ? (
               <span className="text-gray-500 text-sm">Loading session...</span>
             ) : isLoggedIn ? (
               <button
@@ -223,21 +200,9 @@ export default function Opportunities() {
                   {/* Stats & Content */}
                   <div className="relative">
                     {/* Overlay: Not logged in */}
-                    {!isLoggedIn && (
+                    {!isAuthorized && !isLoggedIn && (
                       <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-b-3xl">
-                        <svg
-                          className="w-12 h-12 text-[#1C5244] mb-3"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={1.5}
-                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                          />
-                        </svg>
+                        <Lock className="text-[#1C5244] size-12 mb-3" />
                         <p className="text-secondary font-semibold mb-2">
                           Login to View Details
                         </p>
@@ -254,21 +219,9 @@ export default function Opportunities() {
                     )}
 
                     {/* Overlay: Logged in but NDA not signed */}
-                    {isLoggedIn && !hasSignedNda && (
+                    {!isAuthorized && isLoggedIn && !hasSignedNda && (
                       <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/85 backdrop-blur-sm rounded-b-3xl">
-                        <svg
-                          className="w-12 h-12 text-[#F8AB1D] mb-3"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={1.5}
-                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                          />
-                        </svg>
+                        <FileText className="size-12 mb-3 text-[#F8AB1D]" />
                         <p className="text-secondary font-semibold mb-2">
                           NDA Signature Required
                         </p>
@@ -288,7 +241,7 @@ export default function Opportunities() {
                     {/* Stats */}
                     <div
                       className={`grid grid-cols-3 divide-x divide-gray-100 bg-gray-50 ${
-                        !isLoggedIn || !hasSignedNda
+                        !isAuthorized && (!isLoggedIn || !hasSignedNda)
                           ? "blur-md select-none"
                           : ""
                       }`}
@@ -315,7 +268,7 @@ export default function Opportunities() {
 
                     {/* Content */}
                     <div
-                      className={`p-6 ${!isLoggedIn || !hasSignedNda ? "blur-md select-none" : ""}`}
+                      className={`p-6 ${!isAuthorized && (!isLoggedIn || !hasSignedNda) ? "blur-md select-none" : ""}`}
                     >
                       <p className="text-gray-600 text-sm mb-4 leading-relaxed">
                         {opp.description}
@@ -326,40 +279,15 @@ export default function Opportunities() {
                             key={feature}
                             className="flex items-center gap-2 text-sm text-gray-600"
                           >
-                            <svg
-                              className="w-4 h-4 text-[#1C5244] shrink-0"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M5 13l4 4L19 7"
-                              />
-                            </svg>
+                            <Check className="size-4 shrink-0 text-[#1C5244]" />
                             {feature}
                           </li>
                         ))}
                       </ul>
 
-                      {/* 👈 Replaced the standard Link with our interactive Button/Message */}
                       {currentStatus === "success" ? (
                         <div className="flex items-start gap-2 text-sm font-medium text-[#1C5244] bg-[#1C5244]/10 p-4 rounded-xl">
-                          <svg
-                            className="w-5 h-5 shrink-0 mt-0.5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M5 13l4 4L19 7"
-                            />
-                          </svg>
+                          <Check className="size-5 shrink-0 mt-0.5" />
                           <p>
                             Thank you for expressing interest. Our team will get
                             in touch with you shortly.
@@ -373,26 +301,7 @@ export default function Opportunities() {
                         >
                           {currentStatus === "loading" ? (
                             <>
-                              <svg
-                                className="animate-spin -ml-1 mr-2 h-5 w-5 text-secondary"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                              >
-                                <circle
-                                  className="opacity-25"
-                                  cx="12"
-                                  cy="12"
-                                  r="10"
-                                  stroke="currentColor"
-                                  strokeWidth="4"
-                                ></circle>
-                                <path
-                                  className="opacity-75"
-                                  fill="currentColor"
-                                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                ></path>
-                              </svg>
+                              <Loader2 className="animate-spin size-5 text-secondary -ml-1 mr-2" />
                               Processing...
                             </>
                           ) : (
