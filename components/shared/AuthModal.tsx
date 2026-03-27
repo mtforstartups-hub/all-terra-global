@@ -2,10 +2,9 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ArrowLeft } from "lucide-react";
+import { X, ArrowLeft, MailCheck } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
-// import { redirect } from "next/navigation";
 import "react-phone-number-input/style.css";
 import PhoneInput, { Value } from "react-phone-number-input";
 
@@ -17,7 +16,6 @@ interface AuthModalProps {
 
 type TabState = "login" | "register" | "forgotPassword";
 
-// Brought over from ContactForm
 const investmentOptions = [
   "Mining Investment",
   "Real Estate Financing",
@@ -27,8 +25,6 @@ const investmentOptions = [
 ];
 
 const amountOptions = [
-  // "Under $250K",
-  // "$100K - $250K",
   "$250K - $500K",
   "$500K - $1M",
   "Over $1M",
@@ -44,11 +40,12 @@ export default function AuthModal({
   const [isPending, setIsPending] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+  const [showSuccessScreen, setShowSuccessScreen] = useState(false);
 
   // State for the Phone Input
   const [phoneValue, setPhoneValue] = useState<Value>();
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsPending(true);
     setErrorMsg("");
@@ -95,14 +92,8 @@ export default function AuthModal({
       if (error) {
         setErrorMsg(error.message || "Registration failed.");
       } else {
-        setSuccessMsg(
-          "Registration successful! Please check your email to verify your account.",
-        );
-        setTimeout(() => {
-          onLoginSuccess();
-          onClose();
-        }, 4000);
-        // redirect("/dashboard");
+        // Show the new success screen instead of the form
+        setShowSuccessScreen(true);
       }
     } else if (activeTab === "login") {
       const { error } = await authClient.signIn.email({ email, password });
@@ -141,6 +132,7 @@ export default function AuthModal({
     setErrorMsg("");
     setSuccessMsg("");
     setPhoneValue(undefined); // Reset phone on tab switch
+    setShowSuccessScreen(false); // Reset success screen on tab switch
   };
 
   return (
@@ -173,288 +165,338 @@ export default function AuthModal({
               </button>
 
               <h2 className="text-2xl font-bold mb-2">
-                {activeTab === "login"
-                  ? "Welcome Back"
-                  : activeTab === "register"
-                    ? "Create Account"
-                    : "Reset Password"}
+                {showSuccessScreen
+                  ? "Check Your Email"
+                  : activeTab === "login"
+                    ? "Welcome Back"
+                    : activeTab === "register"
+                      ? "Create Account"
+                      : "Reset Password"}
               </h2>
               <p className="text-white/80 text-sm">
-                {activeTab === "forgotPassword"
-                  ? "Enter your email to receive a password reset link."
-                  : "Unlock full access to exclusive investment opportunities."}
+                {showSuccessScreen
+                  ? "You're almost there!"
+                  : activeTab === "forgotPassword"
+                    ? "Enter your email to receive a password reset link."
+                    : "Unlock full access to exclusive investment opportunities."}
               </p>
             </div>
 
             {/* Scrollable Body Content */}
             <div className="overflow-y-auto grow">
-              {activeTab !== "forgotPassword" && (
-                <div className="flex border-b border-gray-100">
+              {showSuccessScreen ? (
+                // --- NEW SUCCESS SCREEN UI ---
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-8 flex flex-col items-center justify-center text-center space-y-6"
+                >
+                  <div className="relative">
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", bounce: 0.5, delay: 0.1 }}
+                      className="w-20 h-20 bg-[#1C5244]/10 rounded-full flex items-center justify-center"
+                    >
+                      <MailCheck className="w-10 h-10 text-[#1C5244]" />
+                    </motion.div>
+                    {/* Optional decorative ping effect */}
+                    <span
+                      className="absolute inset-0 rounded-full bg-[#1C5244]/20 animate-ping"
+                      style={{ animationDuration: "3s" }}
+                    ></span>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h3 className="text-xl font-bold text-gray-900">
+                      Verification Link Sent
+                    </h3>
+                    <p className="text-gray-500 text-sm leading-relaxed">
+                      We've sent a verification email to the address you
+                      provided. Please click the link in the email to activate
+                      your account.
+                    </p>
+                  </div>
+
                   <button
                     onClick={() => switchTab("login")}
-                    className={`flex-1 py-4 text-sm font-semibold transition-colors relative ${
-                      activeTab === "login"
-                        ? "text-[#1C5244]"
-                        : "text-gray-500 hover:text-gray-700"
-                    }`}
+                    className="w-full py-3.5 bg-[#F8AB1D] text-secondary font-bold rounded-xl mt-4 hover:bg-[#e09a1a] transition-colors shadow-lg shadow-[#F8AB1D]/20 active:scale-[0.98]"
                   >
-                    Login
-                    {activeTab === "login" && (
-                      <motion.div
-                        layoutId="activeTabIndicator"
-                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#F8AB1D]"
-                      />
-                    )}
+                    Continue to Login
                   </button>
-                  <button
-                    onClick={() => switchTab("register")}
-                    className={`flex-1 py-4 text-sm font-semibold transition-colors relative ${
-                      activeTab === "register"
-                        ? "text-[#1C5244]"
-                        : "text-gray-500 hover:text-gray-700"
-                    }`}
-                  >
-                    Register
-                    {activeTab === "register" && (
-                      <motion.div
-                        layoutId="activeTabIndicator"
-                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#F8AB1D]"
-                      />
-                    )}
-                  </button>
-                </div>
-              )}
-
-              <div className="p-6">
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  {errorMsg && (
-                    <div className="p-3 text-sm text-red-500 bg-red-50 rounded-lg border border-red-100">
-                      {errorMsg}
-                    </div>
-                  )}
-
-                  {successMsg && (
-                    <div className="p-3 text-sm text-green-700 bg-green-50 rounded-lg border border-green-200">
-                      {successMsg}
-                    </div>
-                  )}
-
-                  <AnimatePresence mode="popLayout">
-                    {activeTab === "register" && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0, y: -10 }}
-                        animate={{ opacity: 1, height: "auto", y: 0 }}
-                        exit={{ opacity: 0, height: 0, y: -10 }}
-                        className="space-y-4"
+                </motion.div>
+              ) : (
+                // --- EXISTING FORM UI ---
+                <>
+                  {activeTab !== "forgotPassword" && (
+                    <div className="flex border-b border-gray-100">
+                      <button
+                        onClick={() => switchTab("login")}
+                        className={`flex-1 py-4 text-sm font-semibold transition-colors relative ${
+                          activeTab === "login"
+                            ? "text-[#1C5244]"
+                            : "text-gray-500 hover:text-gray-700"
+                        }`}
                       >
-                        <div className="space-y-1">
-                          <label className="text-sm font-medium text-gray-700">
-                            Full Name *
-                          </label>
-                          <input
-                            type="text"
-                            name="fullname"
-                            placeholder="John Doe"
-                            required
-                            className="w-full px-4 py-3 text-gray-900 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#1C5244]/20 focus:border-[#1C5244] transition-all bg-gray-50/50"
+                        Login
+                        {activeTab === "login" && (
+                          <motion.div
+                            layoutId="activeTabIndicator"
+                            className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#F8AB1D]"
                           />
-                        </div>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => switchTab("register")}
+                        className={`flex-1 py-4 text-sm font-semibold transition-colors relative ${
+                          activeTab === "register"
+                            ? "text-[#1C5244]"
+                            : "text-gray-500 hover:text-gray-700"
+                        }`}
+                      >
+                        Register
+                        {activeTab === "register" && (
+                          <motion.div
+                            layoutId="activeTabIndicator"
+                            className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#F8AB1D]"
+                          />
+                        )}
+                      </button>
+                    </div>
+                  )}
 
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-1">
-                            <label className="text-sm font-medium text-gray-700">
-                              Company / Org
-                            </label>
-                            <input
-                              type="text"
-                              name="company"
-                              placeholder="Your Company"
-                              className="w-full px-4 py-3 text-gray-900 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#1C5244]/20 focus:border-[#1C5244] transition-all bg-gray-50/50"
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-sm font-medium text-gray-700">
-                              Phone Number
-                            </label>
-                            <PhoneInput
-                              placeholder="Phone"
-                              value={phoneValue}
-                              onChange={setPhoneValue}
-                              international
-                              defaultCountry="IN"
-                              className="phone-input-container w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus-within:ring-2 focus-within:ring-[#1C5244]/20 focus-within:border-[#1C5244] transition-all [&_input]:bg-transparent [&_input]:outline-none"
-                            />
-                            <input
-                              type="hidden"
-                              name="phone"
-                              value={phoneValue ?? ""}
-                            />
-                          </div>
+                  <div className="p-6">
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                      {errorMsg && (
+                        <div className="p-3 text-sm text-red-500 bg-red-50 rounded-lg border border-red-100">
+                          {errorMsg}
                         </div>
+                      )}
 
-                        {/* Amount Field */}
-                        <div className="space-y-1">
-                          <label className="text-sm font-medium text-gray-700">
-                            Amount *
-                          </label>
-                          <select
-                            name="amount"
-                            required
-                            className="w-full px-4 py-3 text-gray-900 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#1C5244]/20 focus:border-[#1C5244] transition-all bg-gray-50/50"
+                      {successMsg && (
+                        <div className="p-3 text-sm text-green-700 bg-green-50 rounded-lg border border-green-200">
+                          {successMsg}
+                        </div>
+                      )}
+
+                      <AnimatePresence mode="popLayout">
+                        {activeTab === "register" && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0, y: -10 }}
+                            animate={{ opacity: 1, height: "auto", y: 0 }}
+                            exit={{ opacity: 0, height: 0, y: -10 }}
+                            className="space-y-4"
                           >
-                            <option value="">Select range</option>
-                            {amountOptions.map((option) => (
-                              <option key={option} value={option}>
-                                {option}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        {/* Sectors of Interest - Checkbox Grid */}
-                        <div className="space-y-3">
-                          <label className="text-sm font-medium text-gray-700">
-                            Sectors of Interest (Select all that apply)
-                          </label>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch">
-                            {investmentOptions.map((option) => (
-                              <label
-                                key={option}
-                                className="flex items-center p-2 rounded-xl border-2 border-gray-100 bg-gray-50/50 text-gray-700 hover:bg-gray-100 transition-all cursor-pointer has-checked:border-[#1C5244] has-checked:bg-[#1C5244]/5 has-checked:text-[#1C5244]"
-                              >
-                                <input
-                                  type="checkbox"
-                                  name="investment_interest"
-                                  value={option}
-                                  className="w-5 h-5 shrink-0 text-[#1C5244] border-gray-300 rounded focus:ring-[#1C5244] focus:ring-2 accent-[#1C5244] transition-all cursor-pointer"
-                                />
-                                <span className="ml-3 text-xs font-medium leading-tight transition-colors">
-                                  {option}
-                                </span>
+                            <div className="space-y-1">
+                              <label className="text-sm font-medium text-gray-700">
+                                Full Name *
                               </label>
-                            ))}
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                              <input
+                                type="text"
+                                name="fullname"
+                                placeholder="John Doe"
+                                required
+                                className="w-full px-4 py-3 text-gray-900 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#1C5244]/20 focus:border-[#1C5244] transition-all bg-gray-50/50"
+                              />
+                            </div>
 
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-700">
-                      Email Address *
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      placeholder="john@example.com"
-                      required
-                      className="w-full px-4 py-3 text-gray-900 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#1C5244]/20 focus:border-[#1C5244] transition-all bg-gray-50/50"
-                    />
-                  </div>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-1">
+                                <label className="text-sm font-medium text-gray-700">
+                                  Company / Org
+                                </label>
+                                <input
+                                  type="text"
+                                  name="company"
+                                  placeholder="Your Company"
+                                  className="w-full px-4 py-3 text-gray-900 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#1C5244]/20 focus:border-[#1C5244] transition-all bg-gray-50/50"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-sm font-medium text-gray-700">
+                                  Phone Number
+                                </label>
+                                <PhoneInput
+                                  placeholder="Phone"
+                                  value={phoneValue}
+                                  onChange={setPhoneValue}
+                                  international
+                                  defaultCountry="IN"
+                                  className="phone-input-container w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus-within:ring-2 focus-within:ring-[#1C5244]/20 focus-within:border-[#1C5244] transition-all [&_input]:bg-transparent [&_input]:outline-none"
+                                />
+                                <input
+                                  type="hidden"
+                                  name="phone"
+                                  value={phoneValue ?? ""}
+                                />
+                              </div>
+                            </div>
 
-                  <AnimatePresence mode="popLayout">
-                    {activeTab !== "forgotPassword" && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="space-y-1"
-                      >
-                        <div className="flex justify-between items-center mt-4">
-                          <label className="text-sm font-medium text-gray-700">
-                            Password *
-                          </label>
-                          {activeTab === "login" && (
-                            <button
-                              type="button"
-                              onClick={() => switchTab("forgotPassword")}
-                              className="text-xs font-medium text-[#1C5244] hover:underline"
-                            >
-                              Forgot password?
-                            </button>
-                          )}
-                        </div>
-                        <input
-                          type="password"
-                          name="password"
-                          placeholder="••••••••"
-                          required
-                          className="w-full px-4 py-3 text-gray-900 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#1C5244]/20 focus:border-[#1C5244] transition-all bg-gray-50/50"
-                        />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                            {/* Amount Field */}
+                            <div className="space-y-1">
+                              <label className="text-sm font-medium text-gray-700">
+                                Amount *
+                              </label>
+                              <select
+                                name="amount"
+                                required
+                                className="w-full px-4 py-3 text-gray-900 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#1C5244]/20 focus:border-[#1C5244] transition-all bg-gray-50/50"
+                              >
+                                <option value="">Select range</option>
+                                {amountOptions.map((option) => (
+                                  <option key={option} value={option}>
+                                    {option}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
 
-                  {/* Confirm Password field only for Registration */}
-                  <AnimatePresence mode="popLayout">
-                    {activeTab === "register" && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0, y: -10 }}
-                        animate={{ opacity: 1, height: "auto", y: 0 }}
-                        exit={{ opacity: 0, height: 0, y: -10 }}
-                        className="space-y-1 mt-4"
-                      >
+                            {/* Sectors of Interest - Checkbox Grid */}
+                            <div className="space-y-3">
+                              <label className="text-sm font-medium text-gray-700">
+                                Sectors of Interest (Select all that apply)
+                              </label>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch">
+                                {investmentOptions.map((option) => (
+                                  <label
+                                    key={option}
+                                    className="flex items-center p-2 rounded-xl border-2 border-gray-100 bg-gray-50/50 text-gray-700 hover:bg-gray-100 transition-all cursor-pointer has-checked:border-[#1C5244] has-checked:bg-[#1C5244]/5 has-checked:text-[#1C5244]"
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      name="investment_interest"
+                                      value={option}
+                                      className="w-5 h-5 shrink-0 text-[#1C5244] border-gray-300 rounded focus:ring-[#1C5244] focus:ring-2 accent-[#1C5244] transition-all cursor-pointer"
+                                    />
+                                    <span className="ml-3 text-xs font-medium leading-tight transition-colors">
+                                      {option}
+                                    </span>
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      <div className="space-y-1">
                         <label className="text-sm font-medium text-gray-700">
-                          Confirm Password *
+                          Email Address *
                         </label>
                         <input
-                          type="password"
-                          name="confirmPassword"
-                          placeholder="••••••••"
+                          type="email"
+                          name="email"
+                          placeholder="john@example.com"
                           required
                           className="w-full px-4 py-3 text-gray-900 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#1C5244]/20 focus:border-[#1C5244] transition-all bg-gray-50/50"
                         />
-                      </motion.div>
+                      </div>
+
+                      <AnimatePresence mode="popLayout">
+                        {activeTab !== "forgotPassword" && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="space-y-1"
+                          >
+                            <div className="flex justify-between items-center mt-4">
+                              <label className="text-sm font-medium text-gray-700">
+                                Password *
+                              </label>
+                              {activeTab === "login" && (
+                                <button
+                                  type="button"
+                                  onClick={() => switchTab("forgotPassword")}
+                                  className="text-xs font-medium text-[#1C5244] hover:underline"
+                                >
+                                  Forgot password?
+                                </button>
+                              )}
+                            </div>
+                            <input
+                              type="password"
+                              name="password"
+                              placeholder="••••••••"
+                              required
+                              className="w-full px-4 py-3 text-gray-900 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#1C5244]/20 focus:border-[#1C5244] transition-all bg-gray-50/50"
+                            />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      {/* Confirm Password field only for Registration */}
+                      <AnimatePresence mode="popLayout">
+                        {activeTab === "register" && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0, y: -10 }}
+                            animate={{ opacity: 1, height: "auto", y: 0 }}
+                            exit={{ opacity: 0, height: 0, y: -10 }}
+                            className="space-y-1 mt-4"
+                          >
+                            <label className="text-sm font-medium text-gray-700">
+                              Confirm Password *
+                            </label>
+                            <input
+                              type="password"
+                              name="confirmPassword"
+                              placeholder="••••••••"
+                              required
+                              className="w-full px-4 py-3 text-gray-900 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#1C5244]/20 focus:border-[#1C5244] transition-all bg-gray-50/50"
+                            />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      <button
+                        type="submit"
+                        disabled={isPending}
+                        className="w-full py-3.5 bg-[#F8AB1D] text-secondary font-bold rounded-xl mt-6 hover:bg-accent-dark transition-colors shadow-lg shadow-[#F8AB1D]/20 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isPending
+                          ? "Please wait..."
+                          : activeTab === "login"
+                            ? "Sign In"
+                            : activeTab === "register"
+                              ? "Create Account"
+                              : "Send Reset Link"}
+                      </button>
+                    </form>
+
+                    {activeTab === "forgotPassword" && (
+                      <div className="mt-4 text-center">
+                        <button
+                          onClick={() => switchTab("login")}
+                          className="inline-flex items-center text-sm text-gray-500 hover:text-[#1C5244] transition-colors"
+                        >
+                          <ArrowLeft className="w-4 h-4 mr-1" />
+                          Back to login
+                        </button>
+                      </div>
                     )}
-                  </AnimatePresence>
 
-                  <button
-                    type="submit"
-                    disabled={isPending}
-                    className="w-full py-3.5 bg-[#F8AB1D] text-secondary font-bold rounded-xl mt-6 hover:bg-accent-dark transition-colors shadow-lg shadow-[#F8AB1D]/20 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isPending
-                      ? "Please wait..."
-                      : activeTab === "login"
-                        ? "Sign In"
-                        : activeTab === "register"
-                          ? "Create Account"
-                          : "Send Reset Link"}
-                  </button>
-                </form>
-
-                {activeTab === "forgotPassword" && (
-                  <div className="mt-4 text-center">
-                    <button
-                      onClick={() => switchTab("login")}
-                      className="inline-flex items-center text-sm text-gray-500 hover:text-[#1C5244] transition-colors"
-                    >
-                      <ArrowLeft className="w-4 h-4 mr-1" />
-                      Back to login
-                    </button>
+                    {activeTab !== "forgotPassword" && (
+                      <div className="mt-6 text-center text-sm text-gray-500">
+                        By continuing, you agree to our{" "}
+                        <Link
+                          href="/terms-of-service"
+                          className="text-[#1C5244] hover:underline"
+                        >
+                          Terms of Service
+                        </Link>{" "}
+                        and{" "}
+                        <Link
+                          href="/privacy-policy"
+                          className="text-[#1C5244] hover:underline"
+                        >
+                          Privacy Policy
+                        </Link>
+                        .
+                      </div>
+                    )}
                   </div>
-                )}
-
-                {activeTab !== "forgotPassword" && (
-                  <div className="mt-6 text-center text-sm text-gray-500">
-                    By continuing, you agree to our{" "}
-                    <Link
-                      href="/terms-of-service"
-                      className="text-[#1C5244] hover:underline"
-                    >
-                      Terms of Service
-                    </Link>{" "}
-                    and{" "}
-                    <Link
-                      href="/privacy-policy"
-                      className="text-[#1C5244] hover:underline"
-                    >
-                      Privacy Policy
-                    </Link>
-                    .
-                  </div>
-                )}
-              </div>
+                </>
+              )}
             </div>
           </motion.div>
         </>
