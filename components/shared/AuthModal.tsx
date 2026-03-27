@@ -69,10 +69,16 @@ export default function AuthModal({
         return;
       }
 
-      // Extract new fields (You may need to update your DB schema/auth client to save these)
+      // Extract new fields
       const company = formData.get("company") as string;
       const phone = formData.get("phone") as string;
-      const investmentInterest = formData.get("investment_interest") as string;
+
+      // Get all checked values and join them into a comma-separated string
+      const investmentInterestArray = formData.getAll(
+        "investment_interest",
+      ) as string[];
+      const investmentInterest = investmentInterestArray.join(", ");
+
       const investmentAmount = formData.get("amount") as string;
 
       const { error } = await authClient.signUp.email({
@@ -156,7 +162,7 @@ export default function AuthModal({
             className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-3xl shadow-2xl z-50 flex flex-col max-h-[90vh]"
           >
             {/* Header section (Fixed) */}
-            <div className="bg-[#1C5244] p-6 text-white relative shrink-0">
+            <div className="bg-[#1C5244] p-6 text-white relative shrink-0 rounded-t-3xl">
               <button
                 onClick={onClose}
                 className="absolute top-4 right-4 p-2 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-colors"
@@ -285,39 +291,47 @@ export default function AuthModal({
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-1">
-                            <label className="text-sm font-medium text-gray-700">
-                              Sectors of Interest
-                            </label>
-                            <select
-                              name="investment_interest"
-                              className="w-full px-4 py-3 text-gray-900 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#1C5244]/20 focus:border-[#1C5244] transition-all bg-gray-50/50"
-                            >
-                              <option value="">Select option</option>
-                              {investmentOptions.map((option) => (
-                                <option key={option} value={option}>
+                        {/* Amount Field */}
+                        <div className="space-y-1">
+                          <label className="text-sm font-medium text-gray-700">
+                            Amount *
+                          </label>
+                          <select
+                            name="amount"
+                            required
+                            className="w-full px-4 py-3 text-gray-900 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#1C5244]/20 focus:border-[#1C5244] transition-all bg-gray-50/50"
+                          >
+                            <option value="">Select range</option>
+                            {amountOptions.map((option) => (
+                              <option key={option} value={option}>
+                                {option}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Sectors of Interest - Checkbox Grid */}
+                        <div className="space-y-3">
+                          <label className="text-sm font-medium text-gray-700">
+                            Sectors of Interest (Select all that apply)
+                          </label>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch">
+                            {investmentOptions.map((option) => (
+                              <label
+                                key={option}
+                                className="flex items-center p-2 rounded-xl border-2 border-gray-100 bg-gray-50/50 text-gray-700 hover:bg-gray-100 transition-all cursor-pointer has-checked:border-[#1C5244] has-checked:bg-[#1C5244]/5 has-checked:text-[#1C5244]"
+                              >
+                                <input
+                                  type="checkbox"
+                                  name="investment_interest"
+                                  value={option}
+                                  className="w-5 h-5 shrink-0 text-[#1C5244] border-gray-300 rounded focus:ring-[#1C5244] focus:ring-2 accent-[#1C5244] transition-all cursor-pointer"
+                                />
+                                <span className="ml-3 text-xs font-medium leading-tight transition-colors">
                                   {option}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-sm font-medium text-gray-700">
-                              Amount *
-                            </label>
-                            <select
-                              name="amount"
-                              required
-                              className="w-full px-4 py-3 text-gray-900 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#1C5244]/20 focus:border-[#1C5244] transition-all bg-gray-50/50"
-                            >
-                              <option value="">Select range</option>
-                              {amountOptions.map((option) => (
-                                <option key={option} value={option}>
-                                  {option}
-                                </option>
-                              ))}
-                            </select>
+                                </span>
+                              </label>
+                            ))}
                           </div>
                         </div>
                       </motion.div>
