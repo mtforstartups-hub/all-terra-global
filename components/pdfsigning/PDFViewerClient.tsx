@@ -3,7 +3,7 @@
 import { useState } from "react";
 import PDFSignForm from "./PDFSignForm";
 
-export default function PDFViewerClient() {
+export default function PDFViewerClient({ userEmail }: { userEmail: string }) {
   const [pdfSource, setPdfSource] = useState(
     "/main-template.pdf#toolbar=0&navpanes=0",
   );
@@ -26,6 +26,7 @@ export default function PDFViewerClient() {
           onPreviewReady={(base64Uri) =>
             setPdfSource(`${base64Uri}#toolbar=0&navpanes=0`)
           }
+          userEmail={userEmail}
         />
       </div>
     </div>

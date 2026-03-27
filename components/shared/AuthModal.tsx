@@ -89,6 +89,7 @@ export default function AuthModal({
         phone,
         investmentInterest,
         investmentAmount,
+        callbackURL: "/dashboard",
       });
 
       if (error) {

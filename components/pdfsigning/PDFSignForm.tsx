@@ -6,10 +6,13 @@ import { pdfSign } from "@/app/actions/pdfSign";
 // Accept a callback prop to pass the PDF up to the iframe
 export default function PDFSignForm({
   onPreviewReady,
+  userEmail,
 }: {
   onPreviewReady: (uri: string) => void;
+  userEmail: string;
 }) {
-  const [state, formAction, isPending] = useActionState(pdfSign, {
+  const updateUserWithEmail = pdfSign.bind(null, userEmail);
+  const [state, formAction, isPending] = useActionState(updateUserWithEmail, {
     errors: {},
     message: null,
     success: false,

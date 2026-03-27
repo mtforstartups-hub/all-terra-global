@@ -4,41 +4,83 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react"; // Make sure to install/import lucide-react or use your own spinner
+import { Loader2 } from "lucide-react";
 
 interface NdaModalProps {
   userId: string;
   userEmail: string;
   userName: string;
+  isVerifying?: boolean;
+  hasSignedNda?: boolean | null;
 }
 
-export default function NdaModal({ userEmail }: NdaModalProps) {
+export default function NdaModal({
+  userEmail,
+  isVerifying,
+  hasSignedNda,
+}: NdaModalProps) {
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState("");
 
-  const searchParams = useSearchParams();
+  //need in docusign
+  // const searchParams = useSearchParams();
   const router = useRouter();
 
-  // Check if they just returned from DocuSign
-  const isVerifying = searchParams.get("event") === "signing_complete";
+  // from here starts inbuilt pdf sign
+  // State to track if our artificial delay is finished
+  const [minDelayComplete, setMinDelayComplete] = useState(false);
 
-  // Poll the server to check for the database update
+  // 1. Enforce a minimum 3-second display time for the verifying UI
   useEffect(() => {
     if (isVerifying) {
-      // Refresh the page data every 3 seconds until the session updates
-      // (When the session updates, the parent page will unmount this modal completely)
-      const interval = setInterval(() => {
-        router.refresh();
-      }, 3000);
+      const timer = setTimeout(() => {
+        setMinDelayComplete(true);
+      }, 5000); // Adjust this time (in ms) to control the artificial delay
 
+      return () => clearTimeout(timer);
+    }
+  }, [isVerifying]);
+  // 2. Poll the server if the DB hasn't updated yet
+  useEffect(() => {
+    if (isVerifying && !hasSignedNda) {
+      const interval = setInterval(() => {
+        router.refresh(); // Fetches fresh server data
+      }, 2000);
       return () => clearInterval(interval);
     }
-  }, [isVerifying, router]);
+  }, [isVerifying, hasSignedNda, router]);
+
+  // 3. Close the modal when BOTH conditions are met: time has passed AND DB is updated
+  useEffect(() => {
+    if (isVerifying && minDelayComplete && hasSignedNda) {
+      // Replaces the URL to remove `?event=signing_complete`, which unmounts the modal
+      router.replace("/dashboard");
+    }
+  }, [isVerifying, minDelayComplete, hasSignedNda, router]);
+
+  // to here ends inbuilt pdf sign
+
+  // Check if they just returned from signing //need in docusign
+  // const isVerifying = searchParams.get("event") === "signing_complete";
+
+  //need in docusign
+  // Poll the server to check for the database update
+  // useEffect(() => {
+  //   if (isVerifying) {
+  //     const interval = setInterval(() => {
+  //       router.refresh();
+  //     }, 3000);
+
+  //     return () => clearInterval(interval);
+  //   }
+  // }, [isVerifying, router]);
 
   const handleSign = async () => {
     setIsPending(true);
     setError("");
 
+    // --- DOCUSIGN LOGIC (COMMENTED OUT) ---
+    /*
     try {
       const response = await fetch("/api/docusign/sign-nda", {
         method: "POST",
@@ -57,6 +99,15 @@ export default function NdaModal({ userEmail }: NdaModalProps) {
       setError("A network error occurred. Please try again.");
       setIsPending(false);
     }
+    */
+    // ---------------------------------------
+
+    // --- LOCAL ROUTE LOGIC (ACTIVE) ---
+    // Simulate loading/processing time before redirecting
+    setTimeout(() => {
+      router.push("/sign-nda");
+    }, 1500);
+    // ----------------------------------
   };
 
   // ─── LOADING STATE UI ──────────────────────────────────────────────────
@@ -71,10 +122,19 @@ export default function NdaModal({ userEmail }: NdaModalProps) {
         <h2 className="text-xl font-bold text-gray-900 mb-2">
           Verifying Signature
         </h2>
+
+        {/* ACTIVE LOCAL TEXT */}
         <p className="text-gray-500 text-sm">
+          Please wait while we securely process your signed document. This
+          usually takes a few seconds...
+        </p>
+
+        {/* DOCUSIGN TEXT (COMMENTED OUT) */}
+        {/* <p className="text-gray-500 text-sm">
           Please wait while we securely sync your signed document with DocuSign.
           This usually takes a few seconds...
-        </p>
+        </p> 
+        */}
       </motion.div>
     );
   }
@@ -101,10 +161,19 @@ export default function NdaModal({ userEmail }: NdaModalProps) {
             platform strategies, we require all users to sign a Non-Disclosure
             Agreement (NDA).
           </p>
+
+          {/* ACTIVE LOCAL TEXT */}
           <p className="font-medium text-gray-900">
+            You will be redirected to our secure portal to review and complete
+            the agreement.
+          </p>
+
+          {/* DOCUSIGN TEXT (COMMENTED OUT) */}
+          {/* <p className="font-medium text-gray-900">
             You will be redirected to our secure partner, DocuSign, to review
             and complete the agreement.
-          </p>
+          </p> 
+          */}
         </div>
 
         <AnimatePresence>
@@ -133,7 +202,11 @@ export default function NdaModal({ userEmail }: NdaModalProps) {
             disabled={isPending}
             className="w-full sm:w-auto px-6 py-3 bg-[#F8AB1D] text-black font-bold rounded-xl hover:bg-yellow-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
           >
-            {isPending ? "Connecting to DocuSign..." : "Proceed to Sign"}
+            {/* ACTIVE LOCAL TEXT */}
+            {isPending ? "Preparing document..." : "Proceed to Sign"}
+
+            {/* DOCUSIGN TEXT (COMMENTED OUT) */}
+            {/* {isPending ? "Connecting to DocuSign..." : "Proceed to Sign"} */}
           </button>
         </div>
       </div>
