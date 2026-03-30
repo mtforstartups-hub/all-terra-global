@@ -12,6 +12,7 @@ import {
 } from "@/lib/email-templates";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import fontkit from "@pdf-lib/fontkit";
 
 const formSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters."),
@@ -38,6 +39,19 @@ async function generateSignedPDF(data: Record<string, string>): Promise<{
   const existingPdfBytes = await fs.readFile(filePath);
 
   const pdfDoc = await PDFDocument.load(existingPdfBytes);
+
+  // Loading Fonts
+  pdfDoc.registerFontkit(fontkit);
+
+  const fontPath = path.join(
+    process.cwd(),
+    "public",
+    "fonts",
+    "AlexBrush-Regular.ttf",
+  );
+  const AlexBrushBytes = await fs.readFile(fontPath);
+  const AlexBrushFont = await pdfDoc.embedFont(AlexBrushBytes);
+
   const pages = pdfDoc.getPages();
   const firstPage = pages[0];
   const lastPage = pages[3];
@@ -46,14 +60,78 @@ async function generateSignedPDF(data: Record<string, string>): Promise<{
   firstPage.drawText(data.address, { x: 80, y: 600, size: 11 });
 
   lastPage.drawText(data.fullName, { x: 108, y: 439, size: 11 });
-  lastPage.drawRectangle({
-    x: 75,
-    y: 470,
-    width: 100,
-    height: 40,
-    borderColor: grayscale(0.5),
-  });
-  lastPage.drawText(data.signature, { x: 80, y: 475, size: 14 });
+  // lastPage.drawRectangle({
+  //   x: 75,
+  //   y: 470,
+  //   width: 100,
+  //   height: 40,
+  //   borderColor: grayscale(0.5),
+  // });
+
+  // Getting signature
+  const isImageSignature = data.signature.startsWith("data:image");
+  const BOX = { x: 80, y: 475, width: 100, height: 40 };
+
+  if (isImageSignature) {
+    // Strip the data URI prefix to get raw base64
+    const base64Data = data.signature.split(",")[1];
+    const imageBytes = Buffer.from(base64Data, "base64");
+
+    // Embed as PNG or JPG depending on the data URI
+    const isJpg =
+      data.signature.startsWith("data:image/jpeg") ||
+      data.signature.startsWith("data:image/jpg");
+
+    const embeddedImage = isJpg
+      ? await pdfDoc.embedJpg(imageBytes)
+      : await pdfDoc.embedPng(imageBytes);
+
+    // Scale to fit inside the box, preserving aspect ratio
+    const imgWidth = embeddedImage.width;
+    const imgHeight = embeddedImage.height;
+
+    const scaleX = BOX.width / imgWidth;
+    const scaleY = BOX.height / imgHeight;
+    const scale = Math.min(scaleX, scaleY); // "contain" — never exceeds either dimension
+
+    const drawWidth = imgWidth * scale;
+    const drawHeight = imgHeight * scale;
+
+    // Center the image inside the box
+    const offsetX = (BOX.width - drawWidth) / 2;
+    const offsetY = (BOX.height - drawHeight) / 4;
+
+    lastPage.drawImage(embeddedImage, {
+      x: BOX.x + offsetX,
+      y: BOX.y + offsetY,
+      width: drawWidth,
+      height: drawHeight,
+    });
+  } else {
+    const fontSize = 22;
+    const text = data.signature;
+
+    // Scale font down if text is too wide to fit
+    let finalSize = fontSize;
+    let textWidth = AlexBrushFont.widthOfTextAtSize(text, finalSize);
+    while (textWidth > BOX.width && finalSize > 8) {
+      finalSize -= 1;
+      textWidth = AlexBrushFont.widthOfTextAtSize(text, finalSize);
+    }
+
+    // Center horizontally, center vertically
+    const offsetX = (BOX.width - textWidth) / 2;
+    const textHeight = AlexBrushFont.heightAtSize(finalSize);
+    const offsetY = (BOX.height - textHeight) / 4;
+
+    lastPage.drawText(text, {
+      x: BOX.x + offsetX,
+      y: BOX.y + offsetY,
+      size: finalSize,
+      font: AlexBrushFont,
+      // color: rgb(0.11, 0.32, 0.27), // #1c5244
+    });
+  }
 
   const pdfBytes = await pdfDoc.save();
   const base64 = Buffer.from(pdfBytes).toString("base64");

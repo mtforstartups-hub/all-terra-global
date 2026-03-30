@@ -3,6 +3,7 @@
 import { useActionState, useEffect } from "react";
 import { pdfSign } from "@/app/actions/pdfSign";
 import { Eye, PenLine, AlertCircle, CheckCircle2 } from "lucide-react";
+import SignaturePad from "./SignaturePad";
 
 export default function PDFSignForm({
   onPreviewReady,
@@ -25,33 +26,9 @@ export default function PDFSignForm({
   useEffect(() => {
     if (state.success && state.pdfUri) {
       onPreviewReady(state.pdfUri);
-      if (state.data?.intent === "sign" && onSigned) {
-        onSigned();
-      }
+      if (state.data?.intent === "sign" && onSigned) onSigned();
     }
   }, [state.pdfUri, state.success]);
-
-  const fields = [
-    {
-      name: "fullName",
-      label: "Full Name",
-      placeholder: "Jane Appleseed",
-      error: state.errors?.fullName?.[0],
-    },
-    {
-      name: "address",
-      label: "Address",
-      placeholder: "123 Main St, City, State",
-      error: state.errors?.address?.[0],
-    },
-    {
-      name: "signature",
-      label: "Signature",
-      placeholder: "Type your full legal name",
-      error: state.errors?.signature?.[0],
-      hint: "By typing your name, you agree this is your legal signature.",
-    },
-  ];
 
   return (
     <form action={formAction} className="flex flex-col gap-0">
@@ -61,7 +38,7 @@ export default function PDFSignForm({
           className={`flex items-start gap-2 px-3.5 py-2.5 rounded-xl text-[12.5px] font-medium leading-snug mb-5
           ${
             state.success
-              ? "bg-primary/8 text-primary border border-primary/15"
+              ? "bg-primary/[0.07] text-primary border border-primary/15"
               : "bg-red-50 text-red-600 border border-red-100"
           }`}
         >
@@ -78,44 +55,66 @@ export default function PDFSignForm({
         </div>
       )}
 
-      {/* Fields */}
       <div className="flex flex-col gap-4 mb-6">
-        {fields.map((field) => (
-          <div key={field.name} className="flex flex-col gap-1.5">
-            <label
-              htmlFor={field.name}
-              className="text-[11px] font-semibold text-gray-500 uppercase tracking-widest"
-            >
-              {field.label}
-            </label>
-            <input
-              id={field.name}
-              type="text"
-              name={field.name}
-              placeholder={field.placeholder}
-              defaultValue={
-                (state.data as Record<string, string>)?.[field.name] || ""
-              }
-              autoComplete="off"
-              className={`w-full px-3.5 py-3 rounded-xl border text-[14px] text-secondary bg-[#fafbfa]
-                placeholder:text-gray-300 transition-all duration-150 outline-none
-                focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/10
-                ${
-                  field.error
-                    ? "border-red-300 bg-red-50/50"
-                    : "border-[#e2e8e6]"
-                }`}
-            />
-            {field.error && (
-              <p className="text-[11.5px] text-red-500">{field.error}</p>
-            )}
-            {field.hint && !field.error && (
-              <p className="text-[11px] text-gray-350 leading-relaxed">
-                {field.hint}
-              </p>
-            )}
-          </div>
-        ))}
+        {/* Full Name */}
+        <div className="flex flex-col gap-1.5">
+          <label
+            htmlFor="fullName"
+            className="text-[11px] font-semibold text-gray-500 uppercase tracking-widest"
+          >
+            Full Name
+          </label>
+          <input
+            id="fullName"
+            type="text"
+            name="fullName"
+            placeholder="Jane Appleseed"
+            defaultValue={state.data?.fullName || ""}
+            autoComplete="off"
+            className={`w-full px-3.5 py-3 rounded-xl border text-[14px] text-secondary bg-[#fafbfa]
+              placeholder:text-gray-300 transition-all duration-150 outline-none
+              focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/10
+              ${state.errors?.fullName ? "border-red-300 bg-red-50/50" : "border-[#e2e8e6]"}`}
+          />
+          {state.errors?.fullName && (
+            <p className="text-[11.5px] text-red-500">
+              {state.errors.fullName[0]}
+            </p>
+          )}
+        </div>
+
+        {/* Address */}
+        <div className="flex flex-col gap-1.5">
+          <label
+            htmlFor="address"
+            className="text-[11px] font-semibold text-gray-500 uppercase tracking-widest"
+          >
+            Address
+          </label>
+          <input
+            id="address"
+            type="text"
+            name="address"
+            placeholder="123 Main St, City, State"
+            defaultValue={state.data?.address || ""}
+            autoComplete="off"
+            className={`w-full px-3.5 py-3 rounded-xl border text-[14px] text-secondary bg-[#fafbfa]
+              placeholder:text-gray-300 transition-all duration-150 outline-none
+              focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/10
+              ${state.errors?.address ? "border-red-300 bg-red-50/50" : "border-[#e2e8e6]"}`}
+          />
+          {state.errors?.address && (
+            <p className="text-[11.5px] text-red-500">
+              {state.errors.address[0]}
+            </p>
+          )}
+        </div>
+
+        {/* Signature Pad */}
+        <SignaturePad
+          defaultName={state.data?.fullName || ""}
+          error={state.errors?.signature?.[0]}
+        />
       </div>
 
       {/* Divider */}
@@ -127,15 +126,13 @@ export default function PDFSignForm({
         <div className="flex-1 h-px bg-gray-100" />
       </div>
 
-      {/* Preview locked hint */}
       {!state.hasPreviewed && (
         <div className="flex items-center gap-2 text-[11.5px] text-gray-400 bg-gray-50 border border-gray-100 rounded-xl px-3.5 py-2.5 mb-4">
-          <span className="text-base">💡</span>
+          <span>💡</span>
           Preview the document first before signing.
         </div>
       )}
 
-      {/* Buttons */}
       <div className="flex flex-col gap-2.5">
         <button
           type="submit"
@@ -162,16 +159,11 @@ export default function PDFSignForm({
             ${
               state.hasPreviewed
                 ? "bg-primary text-white shadow-md shadow-primary/25 hover:bg-primary-light"
-                : "bg-gray-100 text-gray-350 cursor-not-allowed"
-            }
-            disabled:cursor-not-allowed disabled:active:scale-100`}
+                : "bg-gray-100 text-gray-400 cursor-not-allowed"
+            } disabled:cursor-not-allowed disabled:active:scale-100`}
         >
           <PenLine size={16} strokeWidth={2} />
-          {isPending
-            ? "Signing…"
-            : !state.hasPreviewed
-              ? "Sign Document"
-              : "Sign Document"}
+          {isPending ? "Signing…" : "Sign Document"}
         </button>
       </div>
     </form>
