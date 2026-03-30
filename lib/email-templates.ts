@@ -177,7 +177,10 @@ export const getAdminNotificationEmailHtml = (details: {
 export const getOpportunityInterestEmailHtml = (details: {
   userName: string;
   userEmail: string;
+  phone: string;
   opportunityTitle: string;
+  sector: string;
+  amount: string;
 }) => {
   return `
   <!DOCTYPE html>
@@ -210,9 +213,21 @@ export const getOpportunityInterestEmailHtml = (details: {
                     <td style="font-weight:700; color:#1C5244; font-size: 14px;">Email Address</td>
                     <td style="color:#333333; font-size: 14px;"><a href="mailto:${details.userEmail}" style="color:#F8AB1D;">${details.userEmail}</a></td>
                   </tr>
+                  <tr style="border-bottom: 1px solid #eeeeee;">
+                    <td style="font-weight:700; color:#1C5244; font-size: 14px;">Phone</td>
+                    <td style="color:#333333; font-size: 14px;"><a href="tel:${details.phone}" style="color:#F8AB1D;">${details.phone}</a></td>
+                  </tr>
                   <tr>
                     <td style="font-weight:700; color:#1C5244; font-size: 14px;">Opportunity</td>
                     <td style="color:#333333; font-size: 14px; font-weight: 600;">${details.opportunityTitle}</td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:700; color:#1C5244; font-size: 14px;">Sector</td>
+                    <td style="color:#333333; font-size: 14px; font-weight: 600;">${details.sector}</td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:700; color:#1C5244; font-size: 14px;">Amount</td>
+                    <td style="color:#333333; font-size: 14px; font-weight: 600;">${details.amount}</td>
                   </tr>
                 </table>
 

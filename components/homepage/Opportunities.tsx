@@ -1,26 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import TiltCard3D from "../TiltCard3D";
 import { authClient } from "@/lib/auth-client";
 import { useAuthModal } from "@/context/AuthModalContext";
-import { expressInterest } from "@/app/actions/opportunities";
-import {
-  Box,
-  Building,
-  Check,
-  CreditCard,
-  FileText,
-  Loader2,
-  Lock,
-} from "lucide-react";
+import { Box, Building, Check, CreditCard, FileText, Lock } from "lucide-react";
 
 export default function Opportunities() {
   const { data: session, isPending } = authClient.useSession();
   const isLoggedIn = !!session;
+  // const isLoggedIn = true;
   const user = session?.user;
   const hasSignedNda = user?.hasSignedNda;
+  // const hasSignedNda = true;
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -31,28 +24,52 @@ export default function Opportunities() {
   const isLoading = !mounted || isPending;
   const isAuthorized = !isLoading && isLoggedIn && !!hasSignedNda;
 
-  // 👈 State to track loading/success status per opportunity
+  // REPLACE WITH:
   const [interestStatus, setInterestStatus] = useState<
-    Record<string, "idle" | "loading" | "success" | "error">
+    Record<string, "idle" | "success">
   >({});
+  const resetTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
-  const handleExpressInterest = async (title: string) => {
-    setInterestStatus((prev) => ({ ...prev, [title]: "loading" }));
+  const handleExpressInterest = useCallback(
+    (opp: (typeof opportunities)[0]) => {
+      // Optimistic update
+      setInterestStatus((prev) => ({ ...prev, [opp.title]: "success" }));
 
-    const result = await expressInterest(title, title);
-    // const result = {
-    //   success: true,
-    //   message: "Successful",
-    // };
-    // await new Promise((resolve) => setTimeout(resolve, 8000));
+      // 5s auto-reset
+      if (resetTimers.current[opp.title])
+        clearTimeout(resetTimers.current[opp.title]);
+      resetTimers.current[opp.title] = setTimeout(() => {
+        setInterestStatus((prev) => ({ ...prev, [opp.title]: "idle" }));
+      }, 5000);
 
-    if (result.success) {
-      setInterestStatus((prev) => ({ ...prev, [title]: "success" }));
-    } else {
-      setInterestStatus((prev) => ({ ...prev, [title]: "error" }));
-      alert(result.message);
-    }
-  };
+      // Throttle: email once per 24h per user+opp
+      if (!user?.id) return;
+      const key = `express_interest_${user.id}_${opp.title}`;
+      const now = Date.now();
+      try {
+        const stored = localStorage.getItem(key);
+        if (stored && (now - parseInt(stored, 10)) / 36e5 < 24) return;
+        localStorage.setItem(key, String(now));
+      } catch {
+        return;
+      }
+
+      // Fire email (non-blocking)
+      fetch("/api/send-op-interest-emails", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userName: user.name ?? "Unknown",
+          userEmail: user.email ?? "Unknown",
+          userPhone: user.phone ?? "Unknown",
+          oppTitle: opp.title,
+          oppSector: opp.sector,
+          oppAmount: opp.amount,
+        }),
+      }).catch(console.error);
+    },
+    [user],
+  );
 
   const opportunities = [
     {
@@ -295,18 +312,11 @@ export default function Opportunities() {
                         </div>
                       ) : (
                         <button
-                          onClick={() => handleExpressInterest(opp.title)}
-                          disabled={currentStatus === "loading"}
+                          onClick={() => handleExpressInterest(opp)}
+                          // disabled={currentStatus === "loading"}
                           className="w-full bg-[#F8AB1D] text-secondary py-3 rounded-xl font-semibold hover:bg-accent-dark transition-all group-hover:shadow-lg group-hover:-translate-y-0.5 disabled:opacity-70 disabled:hover:translate-y-0 flex justify-center items-center"
                         >
-                          {currentStatus === "loading" ? (
-                            <>
-                              <Loader2 className="animate-spin size-5 text-secondary -ml-1 mr-2" />
-                              Processing...
-                            </>
-                          ) : (
-                            "Express Interest"
-                          )}
+                          Express Interest
                         </button>
                       )}
                     </div>

@@ -25,21 +25,21 @@ export async function expressInterest(
     const user = session.user;
 
     // 2. Generate the email HTML
-    const emailHtml = getOpportunityInterestEmailHtml({
-      userName: user.name,
-      userEmail: user.email,
-      opportunityTitle: opportunityTitle,
-    });
+    // const emailHtml = getOpportunityInterestEmailHtml({
+    //   userName: user.name,
+    //   userEmail: user.email,
+    //   opportunityTitle: opportunityTitle,
+    // });
 
-    // 3. Send the email to the Admin
-    const adminEmailAddress = process.env.EMAIL_USER;
+    // // 3. Send the email to the Admin
+    // const adminEmailAddress = process.env.ADMIN_EMAIL;
 
-    await transporter.sendMail({
-      from: `"All-Terra Global System" <${process.env.EMAIL_USER}>`,
-      to: adminEmailAddress,
-      subject: `New Interest: ${opportunityTitle}`,
-      html: emailHtml,
-    });
+    // await transporter.sendMail({
+    //   from: `"All-Terra Global System" <${process.env.EMAIL_USER}>`,
+    //   to: adminEmailAddress,
+    //   subject: `New Interest: ${opportunityTitle}`,
+    //   html: emailHtml,
+    // });
 
     // 4. Return success to the frontend
     return { success: true };
