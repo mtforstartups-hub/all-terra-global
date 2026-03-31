@@ -14,5 +14,8 @@ export default async function SignNDA() {
     // redirect("/login?callbackURL=/sign-nda");
     redirect("/");
   }
+  if (session.user.hasSignedNda) {
+    redirect("/dashboard");
+  }
   return <PDFViewerClient userEmail={session.user.email} />;
 }

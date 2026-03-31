@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Menu, User } from "lucide-react";
 import { useSidebarToggle } from "@/stores/SidebarStore";
 
-export default function DashboardHeader() {
+export default function DashboardHeader({ username }: { username: string }) {
   const { openSidebar } = useSidebarToggle();
   return (
     <header className="flex flex-row justify-between items-start md:items-center px-5 py-4 md:px-10 md:py-6 gap-4 md:gap-0 h-auto md:h-20">
@@ -26,7 +26,7 @@ export default function DashboardHeader() {
           </div>
           <div className="hidden sm:flex flex-col items-start justify-center pr-1">
             <span className="text-[13px] font-bold text-secondary leading-none">
-              John Doe
+              {username}
             </span>
             <span className="text-[11px] text-slate-500 font-medium leading-none mt-1">
               Premium
