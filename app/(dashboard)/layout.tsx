@@ -2,7 +2,6 @@ import React from "react";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import Sidebar from "@/components/dashboard/SideBar";
 import type { Metadata } from "next";
-import "@/components/dashboard/Dashboard.css";
 
 export const metadata: Metadata = {
   title: "Dashboard | All Terra Global",
@@ -15,13 +14,12 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="dashboard-layout fade-in">
+    <div className="flex min-h-screen w-full overflow-hidden bg-slate-50 text-slate-900 transition-all duration-300">
       <Sidebar />
 
-      <main className="main-content">
+      <main className="flex-1 flex flex-col overflow-hidden">
         <DashboardHeader />
-
-        <div className="content-scroll">{children}</div>
+        <div className="flex-1 px-10 pb-10 overflow-y-auto">{children}</div>
       </main>
     </div>
   );
