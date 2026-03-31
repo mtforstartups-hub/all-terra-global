@@ -1,0 +1,203 @@
+/* Base Section Styling */
+.impact-section {
+    padding: 80px 40px;
+    text-align: center;
+    background: #fdfdfd;
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.title {
+    font-size: 40px;
+    font-weight: 800;
+    margin-bottom: 60px;
+    color: #22418f;
+    position: relative;
+    display: inline-block;
+}
+
+.title::after {
+    content: '';
+    position: absolute;
+    width: 80px;
+    height: 4px;
+    background: #ff0000;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 4px;
+}
+
+/* Cards Container */
+.impact-cards {
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+    align-items: flex-start; /* Ensures hovering doesn't stretch siblings */
+    flex-wrap: nowrap; /* Forces them in the same row on desktop */
+    max-width: 1200px;
+    width: 100%;
+}
+
+/* Base Card */
+.impact-card {
+    width: 320px;
+    padding: 35px 25px;
+    border-radius: 16px;
+    background: #ffffff;
+    border: 1px solid rgba(34, 65, 143, 0.08);
+    box-shadow: 0 4px 15px rgba(34, 65, 143, 0.05);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease, border-color 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    outline: none;
+    text-align: left;
+    z-index: 1; /* For the background pseudo-element to stay behind */
+}
+
+/* Nice animated background on hover */
+.impact-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(135deg, rgba(34, 65, 143, 0.06), rgba(255, 0, 0, 0.04));
+    opacity: 0;
+    transition: opacity 0.4s ease-in-out;
+    z-index: -1;
+}
+
+/* Hover ONLY affects the card being hovered */
+.impact-card:hover,
+.impact-card:focus-within {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(34, 65, 143, 0.12);
+    border-color: rgba(34, 65, 143, 0.3);
+    z-index: 2;
+}
+
+.impact-card:hover::before,
+.impact-card:focus-within::before {
+    opacity: 1;
+}
+
+/* Card Header */
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.card-number {
+    font-size: 16px;
+    color: #ff0000;
+    font-weight: 800;
+    background: rgba(255, 0, 0, 0.08);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.impact-card h3 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 22px;
+    color: #22418f;
+}
+
+.short-text {
+    margin: 0;
+    color: #555;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+/* Hover content: initially hidden */
+.impact-card .hover-content {
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    margin-top: 0;
+    transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out, margin-top 0.4s ease;
+}
+
+/* Reveal content ONLY on the hovered card */
+.impact-card:hover .hover-content,
+.impact-card:focus-within .hover-content {
+    opacity: 1;
+    max-height: 250px;
+    margin-top: 20px;
+}
+
+.hover-content ul {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.hover-content li {
+    margin-bottom: 10px;
+    color: #444;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    opacity: 0;
+}
+
+.impact-card:hover li,
+.impact-card:focus-within li {
+    animation: typing 0.6s steps(40, end) forwards;
+}
+
+@keyframes typing {
+    from { width: 0; opacity: 1; }
+    to { width: 100%; opacity: 1; }
+}
+
+.hover-content li::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background-color: #ff0000;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* Stagger lines for hovered card */
+.impact-card:hover li:nth-child(1) { animation-delay: 0.1s; }
+.impact-card:hover li:nth-child(2) { animation-delay: 0.5s; }
+.impact-card:hover li:nth-child(3) { animation-delay: 0.9s; }
+.impact-card:hover li:nth-child(4) { animation-delay: 1.3s; }
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+    .impact-section {
+        padding: 50px 20px;
+    }
+    .title {
+        font-size: 30px;
+        margin-bottom: 50px;
+    }
+    .impact-cards {
+        flex-direction: column;
+        align-items: center;
+        flex-wrap: wrap; /* allow wrapping on smaller screens */
+    }
+    .impact-card {
+        width: 100%;
+        max-width: 400px;
+        padding: 25px 20px;
+    }
+}
