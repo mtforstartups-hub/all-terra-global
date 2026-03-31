@@ -5,6 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { LayoutGrid, User, Briefcase, Tag, LogOut, X } from "lucide-react";
 import { useSidebarToggle } from "@/stores/SidebarStore";
+import { authClient } from "@/lib/auth-client";
 
 export const dashboardMenu = [
   { name: "Overview", href: "/dashboard", icon: LayoutGrid },
@@ -78,7 +79,18 @@ export default function Sidebar() {
         </nav>
 
         <div className="mt-auto">
-          <button className="flex w-full items-center gap-3 px-4 py-[14px] rounded-xl border-none bg-transparent text-red-500 text-[15px] font-medium cursor-pointer transition-all duration-300 text-left hover:bg-red-500/10">
+          <button
+            onClick={async () => {
+              await authClient.signOut({
+                fetchOptions: {
+                  onSuccess: () => {
+                    window.location.href = "/";
+                  },
+                },
+              });
+            }}
+            className="flex w-full items-center gap-3 px-4 py-[14px] rounded-xl border-none bg-transparent text-red-500 text-[15px] font-medium cursor-pointer transition-all duration-300 text-left hover:bg-red-500/10"
+          >
             <span className="flex items-center justify-center">
               <LogOut size={20} />
             </span>

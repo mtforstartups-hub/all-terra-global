@@ -1,5 +1,7 @@
 import EditProfile from "@/components/dashboard/EditProfile";
+import { requireUser } from "@/lib/session";
 
-export default function page() {
-  return <EditProfile onSave={false} onCancel={false} />;
+export default async function page() {
+  const user = await requireUser();
+  return <EditProfile user={user} />;
 }

@@ -43,6 +43,9 @@ export const auth = betterAuth({
       investmentInterest: { type: "string", required: false },
       investmentAmount: { type: "string", required: true },
     },
+    changeEmail: {
+      enabled: true,
+    },
   },
   baseURL:
     process.env.BETTER_AUTH_URL ||
