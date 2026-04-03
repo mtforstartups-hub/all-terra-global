@@ -1,108 +1,244 @@
 "use client";
-import React, { useState } from "react";
-import "./editprofile.css";
+import { useActionState, useEffect, useRef } from "react";
+import Link from "next/link";
+import { requireUser } from "@/lib/session";
+import {
+  updateProfile,
+  updateEmail,
+  updatePassword,
+  ActionState,
+} from "@/app/actions/profile";
 
-export default function EditProfile({ onSave, onCancel }: any) {
-  const [formData, setFormData] = useState({
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@allteraglobal.com",
-    phone: "+1 (555) 123-4567",
-    location: "New York, USA",
-    bio: "Premium Investor with 5+ years of experience in real estate and tech equities.",
-  });
+const initialState: ActionState = { type: "", message: "", success: false };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+export default function EditProfile({
+  user,
+}: {
+  user: Awaited<ReturnType<typeof requireUser>>;
+}) {
+  const [profileMsg, profileAction, isPendingProfile] = useActionState(
+    updateProfile,
+    initialState,
+  );
+  const [emailMsg, emailAction, isPendingEmail] = useActionState(
+    updateEmail,
+    initialState,
+  );
+  const [passwordMsg, passwordAction, isPendingPassword] = useActionState(
+    updatePassword,
+    initialState,
+  );
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (onSave) onSave(formData);
-  };
+  const passwordFormRef = useRef<HTMLFormElement>(null);
+
+  // Clear password form only on success automatically
+  useEffect(() => {
+    if (passwordMsg.success && passwordFormRef.current) {
+      passwordFormRef.current.reset();
+    }
+  }, [passwordMsg]);
+
   return (
-    <div className="edit-profile-container card glass fade-in">
-      <div className="edit-profile-header">
-        <h2>Edit Profile</h2>
-        <p>Update your personal information and contact details.</p>
+    <div className="max-w-[800px] mx-auto flex flex-col gap-8 animate-fade-in pb-10">
+      {/* --- Personal Information --- */}
+      <div className="p-8 border border-black/5 bg-white/90 backdrop-blur-md shadow-[0_4px_16px_0_rgba(0,0,0,0.05)] rounded-2xl">
+        <div className="mb-6 pb-4 border-b border-black/10">
+          <h2 className="text-[22px] font-semibold text-secondary mb-1">
+            Personal Information
+          </h2>
+          <p className="text-sm text-slate-500">
+            Update your name and primary contact number.
+          </p>
+        </div>
+
+        <form action={profileAction} className="flex flex-col gap-5">
+          <div className="flex flex-col sm:flex-row gap-5">
+            <div className="flex flex-col gap-2 flex-1">
+              <label className="text-[13px] font-medium text-slate-500 uppercase tracking-[0.5px]">
+                First Name
+              </label>
+              <input
+                type="text"
+                name="firstName"
+                defaultValue={user.name?.split(" ")[0] || ""}
+                required
+                className="px-4 py-3 bg-black/5 border border-black/10 rounded-lg text-secondary text-[15px] transition-all duration-200 outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 focus:bg-slate-500/10"
+              />
+            </div>
+            <div className="flex flex-col gap-2 flex-1">
+              <label className="text-[13px] font-medium text-slate-500 uppercase tracking-[0.5px]">
+                Last Name
+              </label>
+              <input
+                type="text"
+                name="lastName"
+                defaultValue={user.name?.split(" ").slice(1).join(" ") || ""}
+                required
+                className="px-4 py-3 bg-black/5 border border-black/10 rounded-lg text-secondary text-[15px] transition-all duration-200 outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 focus:bg-slate-500/10"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-5">
+            <div className="flex flex-col gap-2 flex-1 relative">
+              <label className="text-[13px] font-medium text-slate-500 uppercase tracking-[0.5px]">
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                name="phone"
+                defaultValue={user.phone?.toString() || ""}
+                className="px-4 py-3 bg-black/5 border border-black/10 rounded-lg text-secondary text-[15px] transition-all duration-200 outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 focus:bg-slate-500/10"
+              />
+            </div>
+          </div>
+
+          {profileMsg.message && (
+            <div
+              className={`p-3 rounded-lg text-sm font-medium ${profileMsg.type === "success" ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-600"}`}
+            >
+              {profileMsg.message}
+            </div>
+          )}
+
+          <div className="flex justify-end gap-4 mt-3 pt-6 border-t border-black/10">
+            <Link
+              href="/dashboard/profile"
+              className="px-6 py-3 rounded-lg text-sm font-medium cursor-pointer transition-all duration-200 bg-transparent border border-black/10 text-secondary hover:bg-slate-500/10"
+            >
+              Cancel
+            </Link>
+            <button
+              type="submit"
+              disabled={isPendingProfile}
+              className="px-6 py-3 rounded-lg text-sm font-medium cursor-pointer transition-all duration-200 bg-accent border border-accent text-white hover:bg-[#e09915] hover:-translate-y-px disabled:opacity-70 disabled:hover:translate-y-0"
+            >
+              {isPendingProfile ? "Saving..." : "Save Profile"}
+            </button>
+          </div>
+        </form>
       </div>
 
-      <form onSubmit={handleSubmit} className="edit-profile-form">
-        <div className="form-row">
-          <div className="form-group">
-            <label>First Name</label>
+      {/* --- Email Address --- */}
+      <div className="p-8 border border-black/5 bg-white/90 backdrop-blur-md shadow-[0_4px_16px_0_rgba(0,0,0,0.05)] rounded-2xl">
+        <div className="mb-6 pb-4 border-b border-black/10">
+          <h2 className="text-[22px] font-semibold text-secondary mb-1">
+            Email Address
+          </h2>
+          <p className="text-sm text-slate-500">
+            Changing your email will trigger a verification link to ensure you
+            own the new address.
+          </p>
+        </div>
+
+        <form action={emailAction} className="flex flex-col gap-5">
+          <div className="flex flex-col gap-2">
+            <label className="text-[13px] font-medium text-slate-500 uppercase tracking-[0.5px]">
+              New Email Address
+            </label>
             <input
-              type="text"
-              name="firstName"
-              value={formData.firstName}
-              onChange={handleChange}
+              type="email"
+              name="newEmail"
+              defaultValue={user.email || ""}
               required
+              className="px-4 py-3 bg-black/5 border border-black/10 rounded-lg text-secondary text-[15px] transition-all duration-200 outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 focus:bg-slate-500/10"
             />
           </div>
-          <div className="form-group">
-            <label>Last Name</label>
+
+          {emailMsg.message && (
+            <div
+              className={`p-3 rounded-lg text-sm font-medium ${emailMsg.type === "success" ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-600"}`}
+            >
+              {emailMsg.message}
+            </div>
+          )}
+
+          <div className="flex justify-end gap-4 mt-3 pt-6 border-t border-black/10">
+            <button
+              type="submit"
+              disabled={isPendingEmail}
+              className="px-6 py-3 rounded-lg text-sm font-medium cursor-pointer transition-all duration-200 bg-slate-800 border border-slate-800 text-white hover:bg-slate-700 disabled:opacity-70 disabled:hover:translate-y-0"
+            >
+              {isPendingEmail ? "Processing..." : "Update Email"}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* --- Change Password --- */}
+      <div className="p-8 border border-black/5 bg-white/90 backdrop-blur-md shadow-[0_4px_16px_0_rgba(0,0,0,0.05)] rounded-2xl">
+        <div className="mb-6 pb-4 border-b border-black/10">
+          <h2 className="text-[22px] font-semibold text-secondary mb-1">
+            Change Password
+          </h2>
+          <p className="text-sm text-slate-500">
+            Ensure your account uses a long, random password to stay secure.
+          </p>
+        </div>
+
+        <form
+          action={passwordAction}
+          ref={passwordFormRef}
+          className="flex flex-col gap-5"
+        >
+          <div className="flex flex-col gap-2">
+            <label className="text-[13px] font-medium text-slate-500 uppercase tracking-[0.5px]">
+              Current Password
+            </label>
             <input
-              type="text"
-              name="lastName"
-              value={formData.lastName}
-              onChange={handleChange}
+              type="password"
+              name="currentPassword"
               required
+              className="px-4 py-3 bg-black/5 border border-black/10 rounded-lg text-secondary text-[15px] transition-all duration-200 outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 focus:bg-slate-500/10"
             />
           </div>
-        </div>
 
-        <div className="form-group">
-          <label>Email Address</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        <div className="form-row">
-          <div className="form-group">
-            <label>Phone Number</label>
-            <input
-              type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-            />
+          <div className="flex flex-col sm:flex-row gap-5">
+            <div className="flex flex-col gap-2 flex-1">
+              <label className="text-[13px] font-medium text-slate-500 uppercase tracking-[0.5px]">
+                New Password
+              </label>
+              <input
+                type="password"
+                name="newPassword"
+                minLength={8}
+                required
+                className="px-4 py-3 bg-black/5 border border-black/10 rounded-lg text-secondary text-[15px] transition-all duration-200 outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 focus:bg-slate-500/10"
+              />
+            </div>
+            <div className="flex flex-col gap-2 flex-1">
+              <label className="text-[13px] font-medium text-slate-500 uppercase tracking-[0.5px]">
+                Confirm Password
+              </label>
+              <input
+                type="password"
+                name="confirmPassword"
+                minLength={8}
+                required
+                className="px-4 py-3 bg-black/5 border border-black/10 rounded-lg text-secondary text-[15px] transition-all duration-200 outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 focus:bg-slate-500/10"
+              />
+            </div>
           </div>
-          <div className="form-group">
-            <label>Location</label>
-            <input
-              type="text"
-              name="location"
-              value={formData.location}
-              onChange={handleChange}
-            />
+
+          {passwordMsg.message && (
+            <div
+              className={`p-3 rounded-lg text-sm font-medium ${passwordMsg.type === "success" ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-600"}`}
+            >
+              {passwordMsg.message}
+            </div>
+          )}
+
+          <div className="flex justify-end gap-4 mt-3 pt-6 border-t border-black/10">
+            <button
+              type="submit"
+              disabled={isPendingPassword}
+              className="px-6 py-3 rounded-lg text-sm font-medium cursor-pointer transition-all duration-200 bg-slate-800 border border-slate-800 text-white hover:bg-slate-700 disabled:opacity-70 disabled:hover:translate-y-0"
+            >
+              {isPendingPassword ? "Updating..." : "Update Password"}
+            </button>
           </div>
-        </div>
-
-        <div className="form-group">
-          <label>Bio</label>
-          <textarea
-            name="bio"
-            value={formData.bio}
-            onChange={handleChange}
-            rows={4}
-          ></textarea>
-        </div>
-
-        <div className="form-actions">
-          <button type="button" className="btn-cancel" onClick={onCancel}>
-            Cancel
-          </button>
-          <button type="submit" className="btn-save">
-            Save Changes
-          </button>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 }

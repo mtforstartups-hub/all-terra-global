@@ -2,27 +2,31 @@ import React from "react";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import Sidebar from "@/components/dashboard/SideBar";
 import type { Metadata } from "next";
-import "@/components/dashboard/Dashboard.css";
+
+import NdaProtector from "@/components/dashboard/NdaProtector";
+import { requireUser } from "@/lib/session";
 
 export const metadata: Metadata = {
   title: "Dashboard | All Terra Global",
   description: "Investor Dashboard",
 };
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const user = await requireUser();
   return (
-    <div className="dashboard-layout fade-in">
-      <Sidebar />
+    <NdaProtector user={user}>
+      <div className="flex min-h-screen w-full overflow-hidden bg-slate-50 text-slate-900 transition-all duration-300">
+        <Sidebar />
 
-      <main className="main-content">
-        <DashboardHeader />
-
-        <div className="content-scroll">{children}</div>
-      </main>
-    </div>
+        <main className="flex-1 flex flex-col overflow-hidden">
+          <DashboardHeader username={user?.name || ""} />
+          <div className="flex-1 px-10 pb-10 overflow-y-auto">{children}</div>
+        </main>
+      </div>
+    </NdaProtector>
   );
 }

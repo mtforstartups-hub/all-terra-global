@@ -99,21 +99,12 @@ export default function Header() {
             {/* Login Button — outlined, triggers context modal */}
             {!isPending &&
               (isLoggedIn ? (
-                <button
-                  onClick={async () => {
-                    await authClient.signOut({
-                      fetchOptions: {
-                        onSuccess: () => {
-                          // Redirect to login or home page
-                          window.location.href = "/";
-                        },
-                      },
-                    });
-                  }}
+                <Link
+                  href="/dashboard"
                   className="bg-[#F8AB1D] text-secondary px-6 py-2.5 rounded-lg font-semibold hover:bg-accent-dark transition-all hover:-translate-y-0.5 shadow-lg hover:shadow-xl text-sm"
                 >
-                  Sign Out
-                </button>
+                  Dashboard
+                </Link>
               ) : (
                 <>
                   <button
@@ -196,21 +187,12 @@ export default function Header() {
               {/* Mobile Login Button */}
               {!isPending &&
                 (isLoggedIn ? (
-                  <button
-                    onClick={async () => {
-                      setIsMobileMenuOpen(false);
-                      await authClient.signOut({
-                        fetchOptions: {
-                          onSuccess: () => {
-                            window.location.href = "/";
-                          },
-                        },
-                      });
-                    }}
-                    className="bg-[#F8AB1D] text-secondary px-6 py-3 rounded-lg font-semibold text-center hover:bg-accent-dark transition-all"
+                  <Link
+                    href="/dashboard"
+                    className="bg-[#F8AB1D] text-secondary px-6 py-2.5 rounded-lg font-semibold hover:bg-accent-dark transition-all hover:-translate-y-0.5 shadow-lg hover:shadow-xl text-sm"
                   >
-                    Sign Out
-                  </button>
+                    Dashboard
+                  </Link>
                 ) : (
                   <>
                     <button
