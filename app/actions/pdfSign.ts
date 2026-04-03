@@ -5,7 +5,7 @@ import { z } from "zod";
 import { grayscale, PDFDocument, rgb } from "pdf-lib";
 import fs from "fs/promises";
 import path from "path";
-import { connection, transporter } from "@/lib/auth";
+import { connection, resend } from "@/lib/auth";
 import {
   getNdaAdminNotificationEmailHtml,
   getNdaUserConfirmationEmailHtml,
@@ -160,7 +160,7 @@ async function sendNdaEmails(
   };
 
   // 1. Confirmation email → investor (with signed PDF attached)
-  await transporter.sendMail({
+  await resend.emails.send({
     from: `All-Terra Global <${process.env.EMAIL_USER}>`,
     to: data.email,
     subject: "Your Signed NDA – All-Terra Global",
@@ -169,9 +169,9 @@ async function sendNdaEmails(
   });
 
   // 2. Notification email → admin (with signed PDF attached)
-  await transporter.sendMail({
+  await resend.emails.send({
     from: `All-Terra Global Portal <${process.env.EMAIL_USER}>`,
-    to: process.env.ADMIN_EMAIL,
+    to: process.env.ADMIN_EMAIL!,
     subject: `NDA Signed – ${data.fullName}`,
     html: getNdaAdminNotificationEmailHtml({
       name: data.fullName,

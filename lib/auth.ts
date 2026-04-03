@@ -1,7 +1,8 @@
 import "dotenv/config";
 import { betterAuth } from "better-auth";
 import mysql from "mysql2/promise";
-import nodemailer from "nodemailer";
+// import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import { waitUntil } from "@vercel/functions";
 import {
   getAdminNotificationEmailHtml,
@@ -15,15 +16,18 @@ export const connection = mysql.createPool({
 });
 
 // Configure Nodemailer Transporter
-export const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD,
-  },
-});
+// export const transporter = nodemailer.createTransport({
+//   host: process.env.EMAIL_HOST,
+//   port: 465,
+//   secure: true,
+//   auth: {
+//     user: process.env.EMAIL_USER,
+//     pass: process.env.EMAIL_PASSWORD,
+//   },
+// });
+
+// Using resend now
+export const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const auth = betterAuth({
   database: connection,
@@ -59,12 +63,24 @@ export const auth = betterAuth({
     sendResetPassword: async ({ user, url }, request) => {
       const emailHtml = getResetPasswordEmailHtml(user.name, url);
 
-      const emailPromise = transporter
-        .sendMail({
+      // const emailPromise = transporter
+      //   .sendMail({
+      //     from: `"All-Terra Global" <${process.env.EMAIL_USER}>`,
+      //     to: user.email,
+      //     subject: "Reset your All-Terra Global password",
+      //     html: emailHtml,
+      //   })
+      //   .catch((err) => console.error("Failed to send reset email:", err));
+
+      const emailPromise = resend.emails
+        .send({
           from: `"All-Terra Global" <${process.env.EMAIL_USER}>`,
           to: user.email,
           subject: "Reset your All-Terra Global password",
           html: emailHtml,
+        })
+        .then(({ error }) => {
+          if (error) console.error("Resend API Error (Reset Password):", error);
         })
         .catch((err) => console.error("Failed to send reset email:", err));
 
@@ -79,12 +95,26 @@ export const auth = betterAuth({
     sendVerificationEmail: async ({ user, url }, request) => {
       const emailHtml = getVerificationEmailHtml(user.name, url);
 
-      const emailPromise = transporter
-        .sendMail({
+      // const emailPromise = transporter
+      //   .sendMail({
+      //     from: `"All-Terra Global" <${process.env.EMAIL_USER}>`,
+      //     to: user.email,
+      //     subject: "Verify your All-Terra Global account",
+      //     html: emailHtml,
+      //   })
+      //   .catch((err) =>
+      //     console.error("Failed to send verification email:", err),
+      //   );
+
+      const emailPromise = resend.emails
+        .send({
           from: `"All-Terra Global" <${process.env.EMAIL_USER}>`,
           to: user.email,
           subject: "Verify your All-Terra Global account",
           html: emailHtml,
+        })
+        .then(({ error }) => {
+          if (error) console.error("Resend API Error (Verification):", error);
         })
         .catch((err) =>
           console.error("Failed to send verification email:", err),
@@ -114,12 +144,33 @@ export const auth = betterAuth({
 
           const adminEmailAddress = process.env.ADMIN_EMAIL;
 
-          const adminEmailPromise = transporter
-            .sendMail({
+          // const adminEmailPromise = transporter
+          //   .sendMail({
+          //     from: `"All-Terra Global System" <${process.env.EMAIL_USER}>`,
+          //     to: adminEmailAddress,
+          //     subject: `New Registration: ${user.name}`,
+          //     html: adminHtml,
+          //   })
+          //   .catch((err) =>
+          //     console.error("Failed to send admin notification:", err),
+          //   );
+          if (!adminEmailAddress) {
+            console.warn(
+              "ADMIN_EMAIL is not defined. Skipping admin notification.",
+            );
+            return;
+          }
+
+          const adminEmailPromise = resend.emails
+            .send({
               from: `"All-Terra Global System" <${process.env.EMAIL_USER}>`,
               to: adminEmailAddress,
               subject: `New Registration: ${user.name}`,
               html: adminHtml,
+            })
+            .then(({ error }) => {
+              if (error)
+                console.error("Resend API Error (Admin Notification):", error);
             })
             .catch((err) =>
               console.error("Failed to send admin notification:", err),
