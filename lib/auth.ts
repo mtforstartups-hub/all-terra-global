@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { betterAuth } from "better-auth";
 import mysql from "mysql2/promise";
-// import nodemailer from "nodemailer";
+import nodemailer from "nodemailer";
 import { Resend } from "resend";
 import { waitUntil } from "@vercel/functions";
 import {
@@ -16,15 +16,15 @@ export const connection = mysql.createPool({
 });
 
 // Configure Nodemailer Transporter
-// export const transporter = nodemailer.createTransport({
-//   host: process.env.EMAIL_HOST,
-//   port: 465,
-//   secure: true,
-//   auth: {
-//     user: process.env.EMAIL_USER,
-//     pass: process.env.EMAIL_PASSWORD,
-//   },
-// });
+export const transporter = nodemailer.createTransport({
+  host: process.env.EMAIL_HOST,
+  port: 465,
+  secure: true,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASSWORD,
+  },
+});
 
 // Using resend now
 export const resend = new Resend(process.env.RESEND_API_KEY);
