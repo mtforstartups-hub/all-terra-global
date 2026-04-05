@@ -27,10 +27,9 @@ export async function POST(req: NextRequest) {
     });
 
     if (!sendResult || ("error" in sendResult && sendResult.error)) {
-      const emailError = sendResult?.error ?? "Unknown Resend error";
-      console.error("Interest email failed:", emailError);
+      console.error("Interest email failed:", sendResult?.error);
       return NextResponse.json(
-        { ok: false, error: emailError },
+        { ok: false, error: "Email send failed" },
         { status: 500 },
       );
     }

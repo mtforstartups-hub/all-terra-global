@@ -197,7 +197,8 @@ The `better-auth` config marks `investmentAmount` as `required: true`. The sign-
 
 - `@vercel/functions` is a dependency — `waitUntil()` is used for non-blocking email sends.
 - `NEXT_PUBLIC_BASE_URL` and `BETTER_AUTH_URL` must be set to the deployed URL in production env vars.
-- `DATABASE_URL` must point to a MySQL/MariaDB instance accessible from Vercel's edge/serverless functions.
+- `DATABASE_URL` must point to a MySQL/MariaDB instance accessible from Vercel's Node.js/serverless functions.
+- Keep DB-backed routes and server actions on the Node.js runtime.
 
 ---
 
