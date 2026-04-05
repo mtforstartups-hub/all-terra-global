@@ -10,6 +10,8 @@ import {
   getVerificationEmailHtml,
 } from "./email-templates";
 
+import { sendEmail } from "./send-email";
+
 // Database connection pool for MariaDB / MySQL
 export const connection = mysql.createPool({
   uri: process.env.DATABASE_URL!,
@@ -72,8 +74,7 @@ export const auth = betterAuth({
       //   })
       //   .catch((err) => console.error("Failed to send reset email:", err));
 
-      const emailPromise = resend.emails
-        .send({
+      const emailPromise = sendEmail({
           from: `"All-Terra Global" <${process.env.EMAIL_USER}>`,
           to: user.email,
           subject: "Reset your All-Terra Global password",
@@ -106,8 +107,7 @@ export const auth = betterAuth({
       //     console.error("Failed to send verification email:", err),
       //   );
 
-      const emailPromise = resend.emails
-        .send({
+      const emailPromise = sendEmail({
           from: `"All-Terra Global" <${process.env.EMAIL_USER}>`,
           to: user.email,
           subject: "Verify your All-Terra Global account",
@@ -161,8 +161,7 @@ export const auth = betterAuth({
             return;
           }
 
-          const adminEmailPromise = resend.emails
-            .send({
+          const adminEmailPromise = sendEmail({
               from: `"All-Terra Global System" <${process.env.EMAIL_USER}>`,
               to: adminEmailAddress,
               subject: `New Registration: ${user.name}`,

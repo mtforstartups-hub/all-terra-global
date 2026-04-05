@@ -4,10 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:resend": "cross-env ENABLE_RESEND_TEST_API=true next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:e2e:resend": "cross-env ENABLE_RESEND_TEST_API=true playwright test"
   },
   "dependencies": {
     "@fontsource/dancing-script": "^5.2.8",
@@ -47,6 +49,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/react-signature-canvas": "^1.0.7",
+    "cross-env": "^10.1.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4.1.18",
