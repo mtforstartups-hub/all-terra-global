@@ -190,8 +190,19 @@ export async function pdfSign(
 ): Promise<FormState> {
   const rawData = Object.fromEntries(formData) as Record<string, string>;
 
+  const result = formSchema.safeParse(rawData);
+  if (!result.success) {
+    return {
+      success: false,
+      message: result.error.issues[0]?.message,
+      data: rawData,
+      hasPreviewed: prevState.hasPreviewed,
+      pdfUri: prevState.pdfUri,
+    };
+  }
+
   try {
-    const validatedData = formSchema.parse(rawData);
+    const validatedData = result.data;
     const finalData = {
       ...validatedData,
       email: userEmail,
@@ -218,26 +229,6 @@ export async function pdfSign(
     );
     revalidatePath("/dashboard");
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      const fieldErrors: Record<string, string[]> = {};
-      error.issues.forEach((issue) => {
-        const fieldName = issue.path[0] as string;
-        if (fieldName) {
-          if (!fieldErrors[fieldName]) fieldErrors[fieldName] = [];
-          fieldErrors[fieldName].push(issue.message);
-        }
-      });
-
-      return {
-        errors: fieldErrors,
-        message: "Please fill all the fields correctly.",
-        success: false,
-        data: rawData,
-        hasPreviewed: prevState.hasPreviewed,
-        pdfUri: prevState.pdfUri,
-      };
-    }
-
     console.error("Submission error:", error);
     return {
       message:
