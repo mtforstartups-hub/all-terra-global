@@ -18,22 +18,29 @@ export async function POST(req: NextRequest) {
       amount: oppAmount,
     });
 
-    // // 3. Send the email to the Admin
-
-    await resend.emails.send({
+    // 3. Send the email to the Admin
+    const sendResult = await resend.emails.send({
       from: `"All-Terra Global System" <${env.EMAIL_USER}>`,
       to: env.ADMIN_EMAIL,
       subject: `New Interest: ${oppTitle}`,
       html: emailHtml,
     });
 
+    if (!sendResult || ("error" in sendResult && sendResult.error)) {
+      const emailError = sendResult?.error ?? "Unknown Resend error";
+      console.error("Interest email failed:", emailError);
+      return NextResponse.json(
+        { ok: false, error: emailError },
+        { status: 500 },
+      );
+    }
+
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("Interest email failed:", error);
-    // Return 200 anyway — UX is already optimistically updated, no need to surface this error
     return NextResponse.json(
       { ok: false, error: "Email send failed" },
-      { status: 200 },
+      { status: 500 },
     );
   }
 }

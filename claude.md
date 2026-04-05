@@ -82,7 +82,7 @@ export async function myAction(_state: unknown, formData: FormData) {
 ### Styling
 - Tailwind CSS v4. Use the design tokens from `@theme inline` in `globals.css`.
 - Use utility classes as the default. Reserve `@layer components` for genuinely reusable, multi-element patterns.
-- Dashboard scoped styles live in `components/dashboard/Dashboard.css` — add dashboard-only rules there, not in `globals.css`.
+- Dashboard-scoped styles live in `components/dashboard/Dashboard.css` — add dashboard-only rules there, not in `globals.css`.
 - Do **not** introduce CSS Modules or styled-components.
 
 ### Animation

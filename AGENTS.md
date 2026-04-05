@@ -31,7 +31,7 @@
 
 ## Repository Structure
 
-```
+```text
 all-terra-global/
 ├── app/
 │   ├── layout.tsx              # Root layout — fonts (Montserrat, IBM Plex Sans), AuthModalProvider
@@ -185,7 +185,7 @@ Brand colors defined in `app/globals.css` (CSS custom properties):
 
 Required variables (see `env.ts` for the full validated list):
 
-```
+```bash
 DATABASE_URL            # mysql:// connection string
 BETTER_AUTH_SECRET      # Random secret for better-auth
 BETTER_AUTH_URL         # App base URL
