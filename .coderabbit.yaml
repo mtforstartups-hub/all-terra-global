@@ -1,0 +1,4 @@
+# .coderabbit.yaml
+language: "en-US"
+reviews:
+  auto_approve: true
