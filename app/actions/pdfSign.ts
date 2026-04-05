@@ -192,8 +192,17 @@ export async function pdfSign(
 
   const result = formSchema.safeParse(rawData);
   if (!result.success) {
+    const fieldErrors: Record<string, string[]> = {};
+    for (const issue of result.error.issues) {
+      const field = issue.path[0]?.toString();
+      if (field) {
+        fieldErrors[field] = fieldErrors[field] || [];
+        fieldErrors[field].push(issue.message);
+      }
+    }
     return {
       success: false,
+      errors: fieldErrors,
       message: result.error.issues[0]?.message,
       data: rawData,
       hasPreviewed: prevState.hasPreviewed,
