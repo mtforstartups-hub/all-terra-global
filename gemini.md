@@ -132,7 +132,8 @@ export async function myAction(
 ## Email Rules
 
 - All production email goes through **Resend** (`resend` package).
-- **Ethereal/Nodemailer will not be used in the future** — always default to using Resend for new email logic.
+- Use **Resend** for all production email flows.
+- Keep Ethereal/Nodemailer only as an explicit development fallback where already required; do not introduce it for new production paths.
 - HTML templates are centralized in `lib/email-templates.ts` — add new templates there.
 - The sender address is always accessed via `env.EMAIL_USER` — never a hardcoded string.
 
@@ -192,7 +193,8 @@ The `components/homepage/` directory contains multiple versioned files (e.g. `In
 
 ### Ethereal vs. Resend
 
-- **Ethereal/Nodemailer will not be used in the future.** Any existing code using Ethereal (like `investorContact`) should be migrated to Resend.
+- Use **Resend** for all production email flows.
+- Keep Ethereal/Nodemailer only as an explicit development fallback where already required; do not introduce it for new production paths. Any existing code using Ethereal (like `investorContact`) should be migrated to Resend.
 - All `better-auth` hooks (`sendVerificationEmail`, `sendResetPassword`) already use Resend.
 
 ### Contact Form Email TODO
