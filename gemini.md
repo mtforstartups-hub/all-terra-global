@@ -27,36 +27,38 @@ The brand is professional, corporate, and premium — every UI change should ref
 
 ## Where Things Live (Quick Reference)
 
-| What you need                     | Where to look                                       |
-|-----------------------------------|-----------------------------------------------------|
-| Auth config (better-auth)         | `lib/auth.ts`                                       |
-| Auth client (browser)             | `lib/auth-client.ts`                                |
-| Server-side session guard         | `lib/session.ts` → `requireUser()`                 |
-| All email templates               | `lib/email-templates.ts`                            |
-| Global design tokens + utilities  | `app/globals.css`                                   |
-| Root layout (fonts, providers)    | `app/layout.tsx`                                    |
-| Public pages layout               | `app/(main)/layout.tsx`                             |
-| Dashboard layout (auth-guarded)   | `app/(dashboard)/layout.tsx`                        |
-| Contact form + NDA sign actions   | `app/actions.ts`                                    |
-| Per-feature server actions        | `app/actions/opportunities.ts`, `pdfSign.ts`, `profile.ts` |
-| Dashboard UI components           | `components/dashboard/`                             |
-| Homepage section components       | `components/homepage/`                              |
-| Shared UI (PageHero, AuthModal)   | `components/shared/`                                |
-| Auth modal state                  | `context/AuthModalContext.tsx`                      |
-| Sidebar collapse state            | `stores/SidebarStore.ts`                            |
-| DB migration script               | `scripts/migrate.ts`                                |
+| What you need                    | Where to look                                              |
+| -------------------------------- | ---------------------------------------------------------- |
+| Auth config (better-auth)        | `lib/auth.ts`                                              |
+| Auth client (browser)            | `lib/auth-client.ts`                                       |
+| Server-side session guard        | `lib/session.ts` → `requireUser()`                         |
+| All email templates              | `lib/email-templates.ts`                                   |
+| Global design tokens + utilities | `app/globals.css`                                          |
+| Root layout (fonts, providers)   | `app/layout.tsx`                                           |
+| Public pages layout              | `app/(main)/layout.tsx`                                    |
+| Dashboard layout (auth-guarded)  | `app/(dashboard)/layout.tsx`                               |
+| Contact form + NDA sign actions  | `app/actions.ts`                                           |
+| Per-feature server actions       | `app/actions/opportunities.ts`, `pdfSign.ts`, `profile.ts` |
+| Dashboard UI components          | `components/dashboard/`                                    |
+| Homepage section components      | `components/homepage/`                                     |
+| Shared UI (PageHero, AuthModal)  | `components/shared/`                                       |
+| Auth modal state                 | `context/AuthModalContext.tsx`                             |
+| Sidebar collapse state           | `stores/SidebarStore.ts`                                   |
+| DB migration script              | `scripts/migrate.ts`                                       |
 
 ---
 
 ## Coding Conventions
 
 ### TypeScript
+
 - Target `strict` mode in `tsconfig.json`.
 - **Never use `any`**. Always create proper interfaces and types.
 - Use explicit return types on server actions and API route handlers.
 - Use `z.infer<typeof schema>` for form/input types — do not hand-write Zod output types.
 
 ### Server Actions
+
 - While handling forms, prefer server actions with `useActionState` over fully controlled React forms.
 
 ```ts
@@ -65,9 +67,14 @@ The brand is professional, corporate, and premium — every UI change should ref
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 
-const schema = z.object({ /* ... */ });
+const schema = z.object({
+  /* ... */
+});
 
-export async function myAction(_state: unknown, formData: FormData) {
+export async function myAction(
+  _state: unknown,
+  formData: FormData,
+): Promise<{ success: boolean; message: string }> {
   const result = schema.safeParse(Object.fromEntries(formData));
   if (!result.success) {
     return { success: false, message: result.error.issues[0]?.message };
@@ -79,18 +86,21 @@ export async function myAction(_state: unknown, formData: FormData) {
 ```
 
 ### React Components
+
 - Default to **React Server Components** (RSC). Only add `"use client"` when you need hooks, browser APIs, or event handlers.
 - Use `lucide-react` for every icon. No heroicons or react-icons.
 - New files: `.tsx` only. Legacy `.jsx` files exist — do not create new `.jsx` files.
 - When you need to name a component, do **not** append version numbers (no `ComponentV2.tsx`). Edit in place or replace.
 
 ### Styling
+
 - Tailwind CSS v4. Use the design tokens from `@theme inline` in `globals.css`.
 - Use utility classes as the default. Reserve `@layer components` for genuinely reusable, multi-element patterns.
 - Dashboard-scoped styles live in `components/dashboard/Dashboard.css` — add dashboard-only rules there, not in `globals.css`.
 - Do **not** introduce CSS Modules or styled-components.
 
 ### Animation
+
 - **GSAP** — scroll-triggered, timeline animations, complex sequences.
 - **Framer Motion (`motion`)** — component-level mount/unmount transitions.
 - Keep animations subtle and professional; this is a finance platform, not a portfolio site.
@@ -177,19 +187,24 @@ id VARCHAR(191) PK | identifier TEXT | value TEXT | expiresAt | createdAt | upda
 ## Common Pitfalls & Gotchas
 
 ### Component Versioning Clutter
+
 The `components/homepage/` directory contains multiple versioned files (e.g. `InvestmentJourneyV2.tsx`, `InvestmentJourneyV3.tsx`, `OurEdgeV2.tsx`) and legacy `.jsx` files (`Dashboard.jsx`, `design.jsx`, etc.). These are **dead code** from iterative design — do not add more. The active imports are in `app/(main)/page.tsx`.
 
 ### Ethereal vs. Resend
+
 - **Ethereal/Nodemailer will not be used in the future.** Any existing code using Ethereal (like `investorContact`) should be migrated to Resend.
 - All `better-auth` hooks (`sendVerificationEmail`, `sendResetPassword`) already use Resend.
 
 ### Contact Form Email TODO
+
 In `app/actions.ts` line ~185, the contact form currently sends to a hardcoded recipient. Replace it with `env.ADMIN_EMAIL` before production.
 
 ### `investmentAmount` is Required
+
 The `better-auth` config marks `investmentAmount` as `required: true`. The sign-up form must include this field or registration will fail silently.
 
 ### Images Remote Patterns
+
 `next.config.ts` allows images only from `images.unsplash.com`. Add other hostnames to `remotePatterns` if new image sources are introduced.
 
 ---
