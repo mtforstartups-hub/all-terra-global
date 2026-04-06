@@ -2,13 +2,37 @@ import { resend } from "./auth";
 import fs from "fs";
 import path from "path";
 
+export interface SendEmailAttachment {
+  filename: string;
+  content?: string | Buffer;
+  path?: string;
+}
+
+export interface SendEmailPayload {
+  to: string | string[];
+  from: string;
+  subject: string;
+  html: string;
+  text?: string;
+  cc?: string | string[];
+  bcc?: string | string[];
+  attachments?: SendEmailAttachment[];
+}
+
+export interface SendEmailResponse {
+  data: { id: string } | null;
+  error: { message: string; name: string } | null;
+}
+
 /**
  * A wrapper around Resend's `resend.emails.send` that intercepts test emails.
  * If an email is directed to a test user or contains test identifiers,
  * it will be logged to `test-emails.json` and rerouted to `delivered@resend.dev`
  * to ensure successful API testing without using actual email sending quotas.
  */
-export async function sendEmail(payload: any) {
+export async function sendEmail(
+  payload: SendEmailPayload,
+): Promise<SendEmailResponse> {
   // Check if it's an E2E test email
   const isTestEmail =
     (typeof payload.to === "string" && payload.to.includes("testuser-")) ||
@@ -21,7 +45,7 @@ export async function sendEmail(payload: any) {
 
   if (isTestEmail) {
     const logPath = path.join(process.cwd(), "test-emails.json");
-    
+
     // Log the INTENDED destination before we potentially change it for a mock response
     const logEntry = {
       ...payload,
@@ -37,16 +61,16 @@ export async function sendEmail(payload: any) {
       // Clear CC/BCC to prevent accidental leakage during tests
       if (payload.cc) payload.cc = undefined;
       if (payload.bcc) payload.bcc = undefined;
-      return resend.emails.send(payload);
+      return resend.emails.send(payload as any); // cast to any because resend.emails.send expects its own types
     }
 
     // Default: return a mock success immediately to avoid ANY network call or quota usage
-    return { 
-      data: { id: "test_intercepted_" + Date.now() }, 
-      error: null 
+    return {
+      data: { id: "test_intercepted_" + Date.now() },
+      error: null,
     };
   }
 
   // Real email for non-test users
-  return resend.emails.send(payload);
+  return resend.emails.send(payload as any);
 }

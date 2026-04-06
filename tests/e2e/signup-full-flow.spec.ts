@@ -7,14 +7,31 @@ const TEST_EMAIL = `testuser-${Date.now()}@example.com`;
 const TEST_PASSWORD = 'TestPassword123!';
 const LOG_FILE = path.join(process.cwd(), 'test-emails.json');
 
+interface EmailAttachment {
+  filename: string;
+  content?: string | Buffer;
+  path?: string;
+}
+
+interface EmailLog {
+  to: string | string[];
+  subject: string;
+  html: string;
+  text?: string;
+  from: string;
+  attachments?: EmailAttachment[];
+  _interceptedAt: string;
+  _originalTo: string | string[];
+}
+
 // Helper to wait for a specific email in the log file
-async function waitForEmail(subjectIncludes: string, maxWaitMs = 15000): Promise<any> {
+async function waitForEmail(subjectIncludes: string, maxWaitMs = 15000): Promise<EmailLog> {
   const start = Date.now();
   while (Date.now() - start < maxWaitMs) {
     try {
       const content = await fs.readFile(LOG_FILE, 'utf-8');
       const lines = content.split('\n').filter((l) => l.trim().length > 0);
-      const emails = lines.map((l) => JSON.parse(l));
+      const emails: EmailLog[] = lines.map((l) => JSON.parse(l));
       const found = emails.find((e) => e.subject.includes(subjectIncludes));
       if (found) return found;
     } catch (err) {
@@ -133,7 +150,7 @@ test('Complete Signup Flow with Email Verification and NDA Sign', async ({ page 
   const userNdaEmail = await waitForEmail('Your Signed NDA – All-Terra Global');
   expect(userNdaEmail._originalTo).toBe(TEST_EMAIL);
   expect(userNdaEmail.attachments).toBeDefined();
-  expect(userNdaEmail.attachments[0].filename).toBe('NDA-AllTerraGlobal-Signed.pdf');
+  expect(userNdaEmail.attachments?.[0].filename).toBe('NDA-AllTerraGlobal-Signed.pdf');
 
   // Admin Notification
   const adminNdaEmail = await waitForEmail('NDA Signed – Playwright Test User');
