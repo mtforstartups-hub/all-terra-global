@@ -1,4 +1,2 @@
-# .coderabbit.yaml
-language: "en-US"
 reviews:
-  auto_approve: true
+  request_changes_workflow: true
