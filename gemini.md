@@ -57,7 +57,7 @@ The brand is professional, corporate, and premium — every UI change should ref
 - Use `z.infer<typeof schema>` for form/input types — do not hand-write Zod output types.
 
 ### Server Actions
-- While handling forms, prefer the usage of server actions with `useActionState` over normal React controlled state forms.
+- While handling forms, prefer server actions with `useActionState` over fully controlled React forms.
 
 ```ts
 "use server";
