@@ -23,7 +23,7 @@ export async function investorContact(
   const data = result.data;
 
   try {
-    await sendEmail({
+    const response = await sendEmail({
       from: `"All-Terra Global Contact Form" <${env.EMAIL_USER}>`,
       to: env.ADMIN_EMAIL,
       replyTo: data.email,
@@ -41,6 +41,12 @@ export async function investorContact(
         `Message:             ${data.message ?? "—"}`,
       ].join("\n"),
     });
+
+    if (response.error || !response.data?.id) {
+      throw new Error(
+        response.error?.message ?? "Email provider did not confirm delivery.",
+      );
+    }
 
     // console.log("✉️  Message sent  : ", data);
   } catch (error) {
