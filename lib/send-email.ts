@@ -1,6 +1,7 @@
-import { resend } from "./auth";
-import fs from "fs";
+import { resend } from "./email-client";
+import fs from "fs/promises";
 import path from "path";
+import { CreateEmailOptions } from "resend";
 
 export interface SendEmailAttachment {
   filename: string;
@@ -8,16 +9,7 @@ export interface SendEmailAttachment {
   path?: string;
 }
 
-export interface SendEmailPayload {
-  to: string | string[];
-  from: string;
-  subject: string;
-  html: string;
-  text?: string;
-  cc?: string | string[];
-  bcc?: string | string[];
-  attachments?: SendEmailAttachment[];
-}
+export type SendEmailPayload = CreateEmailOptions;
 
 export interface SendEmailResponse {
   data: { id: string } | null;
@@ -33,15 +25,21 @@ export interface SendEmailResponse {
 export async function sendEmail(
   payload: SendEmailPayload,
 ): Promise<SendEmailResponse> {
+  const shouldIntercept = 
+    process.env.INTERCEPT_TEST_EMAILS === "true" || 
+    process.env.NODE_ENV === "test" || 
+    process.env.NODE_ENV === "development";
+
   // Check if it's an E2E test email
-  const isTestEmail =
+  const isTestEmail = shouldIntercept && (
     (typeof payload.to === "string" && payload.to.includes("testuser-")) ||
     (Array.isArray(payload.to) &&
       payload.to.some((email: string) => email.includes("testuser-"))) ||
     (typeof payload.html === "string" &&
       payload.html.includes("Playwright Test User")) ||
     (typeof payload.subject === "string" &&
-      payload.subject.includes("Playwright Test User"));
+      payload.subject.includes("Playwright Test User"))
+  );
 
   if (isTestEmail) {
     const logPath = path.join(process.cwd(), "test-emails.json");
@@ -52,16 +50,24 @@ export async function sendEmail(
       _interceptedAt: new Date().toISOString(),
       _originalTo: payload.to,
     };
-    fs.appendFileSync(logPath, JSON.stringify(logEntry) + "\n");
+    
+    try {
+      await fs.appendFile(logPath, JSON.stringify(logEntry) + "\n");
+    } catch (err) {
+      console.error("Failed to log test email:", err);
+    }
 
     // If ENABLE_RESEND_TEST_API is "true", we actually hit the Resend API
     // using their official test address which doesn't count against limits.
     if (process.env.ENABLE_RESEND_TEST_API === "true") {
-      payload.to = "delivered@resend.dev";
-      // Clear CC/BCC to prevent accidental leakage during tests
-      if (payload.cc) payload.cc = undefined;
-      if (payload.bcc) payload.bcc = undefined;
-      return resend.emails.send(payload as any); // cast to any because resend.emails.send expects its own types
+      const testPayload = {
+        ...payload,
+        to: "delivered@resend.dev",
+        // Clear CC/BCC to prevent accidental leakage during tests
+        cc: undefined,
+        bcc: undefined,
+      };
+      return resend.emails.send(testPayload as any);
     }
 
     // Default: return a mock success immediately to avoid ANY network call or quota usage

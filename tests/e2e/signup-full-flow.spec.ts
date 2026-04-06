@@ -34,7 +34,10 @@ async function waitForEmail(subjectIncludes: string, maxWaitMs = 15000): Promise
       const emails: EmailLog[] = lines.map((l) => JSON.parse(l));
       const found = emails.find((e) => e.subject.includes(subjectIncludes));
       if (found) return found;
-    } catch (err) {
+    } catch (err: any) {
+      if (err.code !== 'ENOENT') {
+        throw err;
+      }
       // File might not exist yet, ignore
     }
     await new Promise((r) => setTimeout(r, 1000));

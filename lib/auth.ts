@@ -11,6 +11,7 @@ import {
 } from "./email-templates";
 
 import { sendEmail } from "./send-email";
+import { resend } from "./email-client";
 
 // Database connection pool for MariaDB / MySQL
 export const connection = mysql.createPool({
@@ -27,9 +28,6 @@ export const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASSWORD,
   },
 });
-
-// Using resend now
-export const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const auth = betterAuth({
   database: connection,
