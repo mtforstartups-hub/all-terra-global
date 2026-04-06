@@ -2,7 +2,6 @@ import "dotenv/config";
 import { betterAuth } from "better-auth";
 import mysql from "mysql2/promise";
 import nodemailer from "nodemailer";
-import { Resend } from "resend";
 import { waitUntil } from "@vercel/functions";
 import {
   getAdminNotificationEmailHtml,
@@ -11,7 +10,7 @@ import {
 } from "./email-templates";
 
 import { sendEmail } from "./send-email";
-import { resend } from "./email-client";
+import { env } from "@/env";
 
 // Database connection pool for MariaDB / MySQL
 export const connection = mysql.createPool({
@@ -73,11 +72,11 @@ export const auth = betterAuth({
       //   .catch((err) => console.error("Failed to send reset email:", err));
 
       const emailPromise = sendEmail({
-          from: `"All-Terra Global" <${process.env.EMAIL_USER}>`,
-          to: user.email,
-          subject: "Reset your All-Terra Global password",
-          html: emailHtml,
-        })
+        from: `"All-Terra Global" <${env.EMAIL_USER}>`,
+        to: user.email,
+        subject: "Reset your All-Terra Global password",
+        html: emailHtml,
+      })
         .then(({ error }) => {
           if (error) console.error("Resend API Error (Reset Password):", error);
         })
@@ -106,11 +105,11 @@ export const auth = betterAuth({
       //   );
 
       const emailPromise = sendEmail({
-          from: `"All-Terra Global" <${process.env.EMAIL_USER}>`,
-          to: user.email,
-          subject: "Verify your All-Terra Global account",
-          html: emailHtml,
-        })
+        from: `"All-Terra Global" <${env.EMAIL_USER}>`,
+        to: user.email,
+        subject: "Verify your All-Terra Global account",
+        html: emailHtml,
+      })
         .then(({ error }) => {
           if (error) console.error("Resend API Error (Verification):", error);
         })
@@ -140,7 +139,7 @@ export const auth = betterAuth({
 
           // Send to your company email
 
-          const adminEmailAddress = process.env.ADMIN_EMAIL;
+          const adminEmailAddress = env.ADMIN_EMAIL;
 
           // const adminEmailPromise = transporter
           //   .sendMail({
@@ -160,11 +159,11 @@ export const auth = betterAuth({
           }
 
           const adminEmailPromise = sendEmail({
-              from: `"All-Terra Global System" <${process.env.EMAIL_USER}>`,
-              to: adminEmailAddress,
-              subject: `New Registration: ${user.name}`,
-              html: adminHtml,
-            })
+            from: `"All-Terra Global System" <${env.EMAIL_USER}>`,
+            to: adminEmailAddress,
+            subject: `New Registration: ${user.name}`,
+            html: adminHtml,
+          })
             .then(({ error }) => {
               if (error)
                 console.error("Resend API Error (Admin Notification):", error);
