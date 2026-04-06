@@ -184,7 +184,7 @@ The `components/homepage/` directory contains multiple versioned files (e.g. `In
 - All `better-auth` hooks (`sendVerificationEmail`, `sendResetPassword`) already use Resend.
 
 ### Contact Form Email TODO
-In `app/actions.ts` line ~185, the contact form sends to `"team@all-terra.com"`. This must be swapped for `env.ADMIN_EMAIL` before production.
+In `app/actions.ts` line ~185, the contact form currently sends to a hardcoded recipient. Replace it with `env.ADMIN_EMAIL` before production.
 
 ### `investmentAmount` is Required
 The `better-auth` config marks `investmentAmount` as `required: true`. The sign-up form must include this field or registration will fail silently.
