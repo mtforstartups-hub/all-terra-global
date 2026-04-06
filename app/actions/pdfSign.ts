@@ -5,7 +5,8 @@ import { z } from "zod";
 import { grayscale, PDFDocument, rgb } from "pdf-lib";
 import fs from "fs/promises";
 import path from "path";
-import { connection, resend } from "@/lib/auth";
+import { connection } from "@/lib/auth";
+import { sendEmail } from "@/lib/send-email";
 import {
   getNdaAdminNotificationEmailHtml,
   getNdaUserConfirmationEmailHtml,
@@ -13,6 +14,7 @@ import {
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import fontkit from "@pdf-lib/fontkit";
+import { env } from "@/env";
 
 const formSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters."),
@@ -160,8 +162,8 @@ async function sendNdaEmails(
   };
 
   // 1. Confirmation email → investor (with signed PDF attached)
-  await resend.emails.send({
-    from: `All-Terra Global <${process.env.EMAIL_USER}>`,
+  await sendEmail({
+    from: `All-Terra Global <${env.EMAIL_USER}>`,
     to: data.email,
     subject: "Your Signed NDA – All-Terra Global",
     html: getNdaUserConfirmationEmailHtml(data.fullName),
@@ -169,9 +171,9 @@ async function sendNdaEmails(
   });
 
   // 2. Notification email → admin (with signed PDF attached)
-  await resend.emails.send({
-    from: `All-Terra Global Portal <${process.env.EMAIL_USER}>`,
-    to: process.env.ADMIN_EMAIL!,
+  await sendEmail({
+    from: `All-Terra Global Portal <${env.EMAIL_USER}>`,
+    to: env.ADMIN_EMAIL!,
     subject: `NDA Signed – ${data.fullName}`,
     html: getNdaAdminNotificationEmailHtml({
       name: data.fullName,

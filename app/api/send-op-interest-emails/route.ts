@@ -1,5 +1,5 @@
 import { env } from "@/env";
-import { resend } from "@/lib/auth";
+import { sendEmail } from "@/lib/send-email";
 import { getOpportunityInterestEmailHtml } from "@/lib/email-templates";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     });
 
     // 3. Send the email to the Admin
-    const sendResult = await resend.emails.send({
+    const sendResult = await sendEmail({
       from: `"All-Terra Global System" <${env.EMAIL_USER}>`,
       to: env.ADMIN_EMAIL,
       subject: `New Interest: ${oppTitle}`,

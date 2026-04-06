@@ -4,9 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:resend": "cross-env ENABLE_RESEND_TEST_API=true next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:e2e": "playwright test",
+    "test:e2e:resend": "cross-env ENABLE_RESEND_TEST_API=true playwright test"
   },
   "dependencies": {
     "@fontsource/dancing-script": "^5.2.8",
@@ -21,7 +24,7 @@
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.563.0",
     "motion": "^12.34.3",
-    "mysql2": "^3.19.1",
+    "mysql2": "^3.20.0",
     "next": "16.1.6",
     "nodemailer": "^8.0.1",
     "pdf-lib": "^1.17.1",
@@ -38,13 +41,15 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^25.2.0",
+    "@types/node": "^25.5.2",
     "@types/nodemailer": "^7.0.11",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/react-signature-canvas": "^1.0.7",
+    "cross-env": "^10.1.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4.1.18",
