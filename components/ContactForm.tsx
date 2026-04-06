@@ -5,6 +5,7 @@ import "react-phone-number-input/style.css";
 import PhoneInput, { Value } from "react-phone-number-input";
 import { usePathname } from "next/navigation";
 import { investorContact } from "@/app/actions";
+import { Check, Loader2, AlertCircle } from "lucide-react";
 
 const initialState = {
   success: false,
@@ -62,19 +63,7 @@ export default function ContactForm({
       {showSuccess ? (
         <div className="h-full flex flex-col items-center justify-center text-center py-12">
           <div className="w-24 h-24 rounded-full bg-[#1C5244] flex items-center justify-center mb-8">
-            <svg
-              className="w-12 h-12 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
+            <Check className="text-white size-12" />
           </div>
           <h3 className="text-3xl font-bold text-secondary mb-4">Thank You!</h3>
           <p className="text-gray-600 mb-8 max-w-md">
@@ -96,7 +85,12 @@ export default function ContactForm({
               Investment Inquiry
             </h2>
           )}
-          <form key={formKey} ref={formRef} action={formAction} className="space-y-6">
+          <form
+            key={formKey}
+            ref={formRef}
+            action={formAction}
+            className="space-y-6"
+          >
             <div className="grid sm:grid-cols-2 gap-6">
               <div>
                 <label
@@ -247,22 +241,7 @@ export default function ContactForm({
             >
               {pending ? (
                 <>
-                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="none"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
+                  <Loader2 className="animate-spin size-5" />
                   Submitting...
                 </>
               ) : (
@@ -276,17 +255,7 @@ export default function ContactForm({
                 role="alert"
                 className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
               >
-                <svg
-                  className="mt-0.5 h-4 w-4 shrink-0"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                <AlertCircle className="mt-0.5 size-4 shrink-0" />
                 <span>{state.message}</span>
               </div>
             )}
