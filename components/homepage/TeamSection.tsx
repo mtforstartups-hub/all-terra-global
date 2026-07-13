@@ -18,7 +18,7 @@ interface TeamMember {
 
 const teamMembers: TeamMember[] = [
   {
-    name: "Rahul Jain",
+    name: "Raahuul Jaain",
     title: "General Partner",
     subtitle: "Global Investor & Tech-Finance Strategist",
     image: "/images/team/Rahul_Jain.jpeg",
