@@ -4,8 +4,8 @@ import { useActionState, useState, useRef, useEffect } from "react";
 import "react-phone-number-input/style.css";
 import PhoneInput, { Value } from "react-phone-number-input";
 import { usePathname } from "next/navigation";
-import { investorContact } from "@/app/actions";
 import { Check, Loader2, AlertCircle } from "lucide-react";
+import { investorContact } from "@/app/actions/contactForm";
 
 const initialState = {
   success: false,
