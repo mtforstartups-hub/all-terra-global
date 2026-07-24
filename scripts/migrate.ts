@@ -16,7 +16,7 @@ async function runMigration() {
     const connection = await mysql.createConnection(dbUrl);
     console.log("✅ Connected successfully. Starting migration...");
 
-    // 1. Create the User table (with our custom NDA column)
+    // 1. Create the User table (with our custom NDA and onboarding columns)
     await connection.query(`
       CREATE TABLE IF NOT EXISTS user (
         id VARCHAR(191) PRIMARY KEY,
@@ -26,9 +26,28 @@ async function runMigration() {
         image TEXT,
         createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        hasSignedNda BOOLEAN NOT NULL DEFAULT FALSE
+        hasSignedNda BOOLEAN NOT NULL DEFAULT FALSE,
+        company TEXT,
+        phone TEXT,
+        investmentInterest TEXT,
+        investmentAmount TEXT
       );
     `);
+    
+    // 1b. Alter existing User table to add the new columns if it was created previously without them
+    try {
+      await connection.query(`ALTER TABLE user ADD COLUMN company TEXT;`);
+    } catch(e) {} // Ignores error if column already exists
+    try {
+      await connection.query(`ALTER TABLE user ADD COLUMN phone TEXT;`);
+    } catch(e) {}
+    try {
+      await connection.query(`ALTER TABLE user ADD COLUMN investmentInterest TEXT;`);
+    } catch(e) {}
+    try {
+      await connection.query(`ALTER TABLE user ADD COLUMN investmentAmount TEXT;`);
+    } catch(e) {}
+
     console.log("✅ Created 'user' table.");
 
     // 2. Create the Session table

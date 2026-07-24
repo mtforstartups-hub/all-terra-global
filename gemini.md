@@ -113,7 +113,6 @@ export async function myAction(
 - **Never hardcode credentials or emails** — all sensitive values should be accessed through `env.ts` (e.g., `env.EMAIL_USER`).
 - Custom user fields on `better-auth` (stored in the `user` DB table):
   - `hasSignedNda` (boolean)
-  - `docusignEnvelopeId` (string)
   - `company` (string)
   - `phone` (string)
   - `investmentInterest` (string)
@@ -153,7 +152,7 @@ export async function myAction(
 id VARCHAR(191) PK | name TEXT | email VARCHAR(191) UNIQUE
 emailVerified BOOLEAN | image TEXT | createdAt | updatedAt
 hasSignedNda BOOLEAN DEFAULT FALSE
-docusignEnvelopeId TEXT | company TEXT | phone TEXT
+company TEXT | phone TEXT
 investmentInterest TEXT | investmentAmount TEXT
 
 -- session

@@ -1,8 +1,7 @@
 import "dotenv/config";
 import { betterAuth } from "better-auth";
 import mysql from "mysql2/promise";
-import nodemailer from "nodemailer";
-import { waitUntil } from "@vercel/functions";
+
 import {
   getAdminNotificationEmailHtml,
   getResetPasswordEmailHtml,
@@ -17,16 +16,6 @@ export const connection = mysql.createPool({
   uri: process.env.DATABASE_URL!,
 });
 
-// Configure Nodemailer Transporter
-export const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD,
-  },
-});
 
 export const auth = betterAuth({
   database: connection,
@@ -37,10 +26,7 @@ export const auth = betterAuth({
         required: false,
         defaultValue: false,
       },
-      docusignEnvelopeId: {
-        type: "string",
-        required: false,
-      },
+
       company: { type: "string", required: false },
       phone: { type: "string", required: false },
       investmentInterest: { type: "string", required: false },
@@ -81,8 +67,6 @@ export const auth = betterAuth({
           if (error) console.error("Resend API Error (Reset Password):", error);
         })
         .catch((err) => console.error("Failed to send reset email:", err));
-
-      waitUntil(emailPromise);
     },
   },
 
@@ -116,8 +100,6 @@ export const auth = betterAuth({
         .catch((err) =>
           console.error("Failed to send verification email:", err),
         );
-
-      waitUntil(emailPromise);
     },
   },
 
@@ -171,8 +153,6 @@ export const auth = betterAuth({
             .catch((err) =>
               console.error("Failed to send admin notification:", err),
             );
-
-          waitUntil(adminEmailPromise);
         },
       },
     },

@@ -58,7 +58,6 @@ all-terra-global/
 │   ├── api/
 │   │   ├── auth/               # better-auth catch-all handler
 │   │   ├── send-op-interest-emails/
-│   │   ├── _docusign/          # DocuSign webhook handler
 │   │   └── _webhooks/
 │   ├── actions/                # Modular server actions
 │   │   ├── opportunities.ts
@@ -85,8 +84,7 @@ all-terra-global/
 │   ├── auth.ts                 # better-auth config + MySQL pool + Resend + Nodemailer
 │   ├── auth-client.ts          # Better-auth browser client
 │   ├── session.ts              # requireUser() helper — redirects to / if unauthenticated
-│   ├── email-templates.ts      # All HTML email templates
-│   └── docusign.ts
+│   └── email-templates.ts      # All HTML email templates
 ├── context/
 │   └── AuthModalContext.tsx    # Global open/close state for the auth modal
 ├── stores/
@@ -114,7 +112,7 @@ all-terra-global/
 
 - Powered by `better-auth` — **do not** replace with NextAuth or any other library.
 - Email/password with mandatory email verification on sign-up.
-- Custom user fields: `hasSignedNda`, `docusignEnvelopeId`, `company`, `phone`, `investmentInterest`, `investmentAmount`.
+- Custom user fields: `hasSignedNda`, `company`, `phone`, `investmentInterest`, `investmentAmount`.
 - **Client-side auth:** import from `@/lib/auth-client`
 - **Server-side session:** use `requireUser()` from `@/lib/session` in Server Components / layouts.
 - Auth API route lives at `app/api/auth/[...all]/route.ts`.

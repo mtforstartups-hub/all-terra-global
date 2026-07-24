@@ -2,8 +2,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useSearchParams, useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
 interface NdaModalProps {
@@ -20,10 +20,6 @@ export default function NdaModal({
   hasSignedNda,
 }: NdaModalProps) {
   const [isPending, setIsPending] = useState(false);
-  const [error, setError] = useState("");
-
-  //need in docusign
-  // const searchParams = useSearchParams();
   const router = useRouter();
 
   // from here starts inbuilt pdf sign
@@ -59,55 +55,13 @@ export default function NdaModal({
   }, [isVerifying, minDelayComplete, hasSignedNda, router]);
 
   // to here ends inbuilt pdf sign
-
-  // Check if they just returned from signing //need in docusign
-  // const isVerifying = searchParams.get("event") === "signing_complete";
-
-  //need in docusign
-  // Poll the server to check for the database update
-  // useEffect(() => {
-  //   if (isVerifying) {
-  //     const interval = setInterval(() => {
-  //       router.refresh();
-  //     }, 3000);
-
-  //     return () => clearInterval(interval);
-  //   }
-  // }, [isVerifying, router]);
-
   const handleSign = async () => {
     setIsPending(true);
-    setError("");
 
-    // --- DOCUSIGN LOGIC (COMMENTED OUT) ---
-    /*
-    try {
-      const response = await fetch("/api/docusign/sign-nda", {
-        method: "POST",
-      });
-
-      const data = await response.json();
-
-      if (data.success && data.signingUrl) {
-        window.location.href = data.signingUrl;
-      } else {
-        setError(data.error || "Failed to generate signing link.");
-        setIsPending(false);
-      }
-    } catch (err) {
-      console.error(err);
-      setError("A network error occurred. Please try again.");
-      setIsPending(false);
-    }
-    */
-    // ---------------------------------------
-
-    // --- LOCAL ROUTE LOGIC (ACTIVE) ---
     // Simulate loading/processing time before redirecting
     setTimeout(() => {
       router.push("/sign-nda");
     }, 1500);
-    // ----------------------------------
   };
 
   // ─── LOADING STATE UI ──────────────────────────────────────────────────
@@ -129,12 +83,6 @@ export default function NdaModal({
           usually takes a few seconds...
         </p>
 
-        {/* DOCUSIGN TEXT (COMMENTED OUT) */}
-        {/* <p className="text-gray-500 text-sm">
-          Please wait while we securely sync your signed document with DocuSign.
-          This usually takes a few seconds...
-        </p> 
-        */}
       </motion.div>
     );
   }
@@ -168,26 +116,9 @@ export default function NdaModal({
             the agreement.
           </p>
 
-          {/* DOCUSIGN TEXT (COMMENTED OUT) */}
-          {/* <p className="font-medium text-gray-900">
-            You will be redirected to our secure partner, DocuSign, to review
-            and complete the agreement.
-          </p> 
-          */}
         </div>
 
-        <AnimatePresence>
-          {error && (
-            <motion.p
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="text-red-500 text-sm font-medium text-center"
-            >
-              {error}
-            </motion.p>
-          )}
-        </AnimatePresence>
+
 
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
           <p className="text-sm text-gray-400">
@@ -202,11 +133,7 @@ export default function NdaModal({
             disabled={isPending}
             className="w-full sm:w-auto px-6 py-3 bg-[#F8AB1D] text-black font-bold rounded-xl hover:bg-yellow-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
           >
-            {/* ACTIVE LOCAL TEXT */}
             {isPending ? "Preparing document..." : "Proceed to Sign"}
-
-            {/* DOCUSIGN TEXT (COMMENTED OUT) */}
-            {/* {isPending ? "Connecting to DocuSign..." : "Proceed to Sign"} */}
           </button>
         </div>
       </div>

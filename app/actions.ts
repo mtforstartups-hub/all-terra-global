@@ -1,10 +1,7 @@
 "use server";
 import { z } from "zod";
-import nodemailer from "nodemailer";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
-import { revalidatePath } from "next/cache";
-import mysql from "mysql2/promise";
+import { sendEmail } from "@/lib/send-email";
+import { env } from "@/env";
 
 // ─── Schema ────────────────────────────────────────────────────────────────
 
@@ -20,45 +17,7 @@ const contactFormSchema = z.object({
   message: z.string().optional(),
 });
 
-const signUpSchema = z.object({
-  fullname: z.string().min(1, "Full name is required"),
-  email: z.email("Please enter a valid email address"),
-  password: z.string().min(1, "Password is required"),
-});
-
-// ─── Email helpers ─────────────────────────────────────────────────────────
-
-/**
- * Module-level cache so every request reuses the SAME Ethereal inbox.
- * Creating a fresh account per-request orphans the messages — the preview
- * URL then returns "Invalid or unknown message identifier".
- */
-let _transporterCache: nodemailer.Transporter | null = null;
-
-async function getTransporter() {
-  if (_transporterCache) return _transporterCache;
-
-  const testAccount = await nodemailer.createTestAccount();
-
-  console.log("─────────────────────────────────────────────");
-  console.log("📬  Ethereal test inbox created:");
-  console.log("    Login  →  https://ethereal.email/login");
-  console.log("    User   →", testAccount.user);
-  console.log("    Pass   →", testAccount.pass);
-  console.log("─────────────────────────────────────────────");
-
-  _transporterCache = nodemailer.createTransport({
-    host: "smtp.ethereal.email",
-    port: 587,
-    secure: false,
-    auth: {
-      user: testAccount.user,
-      pass: testAccount.pass,
-    },
-  });
-
-  return _transporterCache;
-}
+// ─── Email HTML builder ─────────────────────────────────────────────────────
 
 function buildEmailHtml(data: z.infer<typeof contactFormSchema>): string {
   const row = (label: string, value?: string) =>
@@ -178,32 +137,22 @@ export async function investorContact(
   const data = result.data;
 
   try {
-    const transporter = await getTransporter();
-
-    const info = await transporter.sendMail({
-      from: `"All-Terra Global Contact Form" <no-reply@all-terra.com>`,
-      to: "team@all-terra.com", // TODO: replace with real recipient in production
+    const { error } = await sendEmail({
+      from: `"All-Terra Global Contact Form" <${env.EMAIL_USER}>`,
+      to: env.ADMIN_EMAIL,
       replyTo: data.email,
       subject: `New Investment Inquiry — ${data.investment_interest} (${data.name})`,
       html: buildEmailHtml(data),
-      text: [
-        `New Investment Inquiry`,
-        `─────────────────────`,
-        `Name:                ${data.name}`,
-        `Company:             ${data.company ?? "—"}`,
-        `Email:               ${data.email}`,
-        `Phone:               ${data.phone ?? "—"}`,
-        `Investment Interest: ${data.investment_interest}`,
-        `Investment Amount:   ${data.amount ?? "—"}`,
-        `Message:             ${data.message ?? "—"}`,
-      ].join("\n"),
     });
 
-    // In development, log the Ethereal preview URL
-    console.log(
-      "✉️  Message sent. Preview URL:",
-      nodemailer.getTestMessageUrl(info),
-    );
+    if (error) {
+      console.error("Failed to send contact email:", error);
+      return {
+        success: false,
+        message:
+          "We received your inquiry but couldn't send a notification. Our team will still follow up.",
+      };
+    }
   } catch (error) {
     console.error("Failed to send contact email:", error);
     return {
@@ -217,62 +166,4 @@ export async function investorContact(
     success: true,
     message: "Thank you! We'll be in touch within 24–48 hours.",
   };
-}
-
-// Reuse your existing connection details
-const connection = mysql.createPool({
-  uri: process.env.DATABASE_URL!,
-});
-
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: Number(process.env.EMAIL_PORT) || 587,
-  secure: process.env.EMAIL_SECURE === "false",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD,
-  },
-});
-
-export async function signUserNda(
-  userId: string,
-  userEmail: string,
-  userName: string,
-) {
-  try {
-    // 1. Update the user in the database
-    await connection.execute("UPDATE user SET hasSignedNda = ? WHERE id = ?", [
-      true,
-      userId,
-    ]);
-
-    // 2. Send the NDA Email (temporarily disabled)
-    // Note: For a real app, you might want to attach a PDF.
-    // Here we send an HTML copy as a legal receipt.
-    // const dateSigned = new Date().toLocaleString();
-
-    // await transporter.sendMail({
-    //   from: '"AllTerraGlobal" <info@allterraglobal.com>',
-    //   to: userEmail,
-    //   subject: "Your Signed Non-Disclosure Agreement",
-    //   html: `
-    //     <h2>Non-Disclosure Agreement - Executed Copy</h2>
-    //     <p>Dear ${userName},</p>
-    //     <p>This email serves as confirmation that you have digitally signed the Non-Disclosure Agreement on <strong>${dateSigned}</strong>.</p>
-    //     <hr />
-    //     <h3>Agreement Terms:</h3>
-    //     <p>[Insert your full NDA text here...]</p>
-    //     <hr />
-    //     <p>Signed electronically by: <strong>${userName}</strong> (${userEmail})</p>
-    //   `,
-    // });
-
-    // 3. Revalidate the dashboard page so the blur is removed
-    revalidatePath("/dashboard");
-
-    return { success: true };
-  } catch (error) {
-    console.error("Error signing NDA:", error);
-    return { success: false, error: "Failed to sign NDA" };
-  }
 }

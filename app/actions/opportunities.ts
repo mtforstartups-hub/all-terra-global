@@ -1,16 +1,13 @@
 "use server";
 
-import { auth } from "@/lib/auth"; // Adjust path to wherever your better-auth config is exported
-import { transporter } from "@/lib/auth"; // Adjust path if your nodemailer transporter is exported elsewhere
+import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { getOpportunityInterestEmailHtml } from "@/lib/email-templates";
 
 export async function expressInterest(
   opportunityId: string,
   opportunityTitle: string,
 ) {
   try {
-    // 1. Get the current logged-in user session securely on the server
     const session = await auth.api.getSession({
       headers: await headers(),
     });
@@ -22,26 +19,9 @@ export async function expressInterest(
       };
     }
 
-    const user = session.user;
+    // TODO: implement email notification and/or DB record for expressed interest
+    // Suggestion: call sendEmail() from @/lib/send-email when ready
 
-    // 2. Generate the email HTML
-    // const emailHtml = getOpportunityInterestEmailHtml({
-    //   userName: user.name,
-    //   userEmail: user.email,
-    //   opportunityTitle: opportunityTitle,
-    // });
-
-    // // 3. Send the email to the Admin
-    // const adminEmailAddress = process.env.ADMIN_EMAIL;
-
-    // await transporter.sendMail({
-    //   from: `"All-Terra Global System" <${process.env.EMAIL_USER}>`,
-    //   to: adminEmailAddress,
-    //   subject: `New Interest: ${opportunityTitle}`,
-    //   html: emailHtml,
-    // });
-
-    // 4. Return success to the frontend
     return { success: true };
   } catch (error) {
     console.error("Failed to process interest:", error);
