@@ -42,7 +42,7 @@ all-terra-global/
 │   │   ├── page.tsx            # Homepage
 │   │   ├── about/
 │   │   ├── contact/
-│   │   ├── opportunities/      # Three deal sub-routes: _mining, _real-estate, _vendor-financing
+│   │   ├── opportunities/      # Investment opportunities listing
 │   │   ├── team/
 │   │   ├── disclaimer/
 │   │   ├── privacy-policy/
@@ -103,7 +103,6 @@ all-terra-global/
 - **Route groups** are used to apply different layouts:
   - `(main)` — public pages, includes `<Header>` and `<Footer>`
   - `(dashboard)` — protected investor area, uses its own sidebar layout
-- Underscore-prefixed folders (e.g. `_mining`) inside `opportunities/` are **not routable** — they contain sub-page content rendered via the parent `page.tsx`.
 - Dashboard access requires: active session **and** `hasSignedNda === true`. Both checks live in `DashboardLayout` and `NdaProtector`.
 
 ---
@@ -152,7 +151,6 @@ Brand colors defined in `app/globals.css` (CSS custom properties):
 - Typography: **Montserrat** (headings), **IBM Plex Sans** (body). Loaded via `next/font/google`.
 - Tailwind tokens are mapped from these CSS variables inside `@theme inline`.
 - Pre-built utilities: `.btn-primary`, `.btn-secondary`, `.glass`, `.gradient-primary`, `.gradient-accent`, `.animate-fade-in-up`, `.animate-marquee`, etc.
-- Dashboard has its own scoped CSS in `components/dashboard/Dashboard.css`.
 
 ---
 
