@@ -57,6 +57,7 @@ async function generateSignedPDF(data: Record<string, string>): Promise<{
 
   const pages = pdfDoc.getPages();
   const firstPage = pages[0];
+  // shortcut: the signature block lives on page 4 of public/main-template.pdf
   const lastPage = pages[3];
 
   firstPage.drawText(data.fullName, { x: 80, y: 615, size: 11 });

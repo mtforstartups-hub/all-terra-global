@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { X, ArrowLeft, MailCheck } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";

@@ -3,6 +3,7 @@ import nodemailer from "nodemailer";
 import fs from "fs/promises";
 import path from "path";
 import { CreateEmailOptions } from "resend";
+import { env } from "@/env";
 
 export interface SendEmailAttachment {
   filename: string;
@@ -23,13 +24,13 @@ export interface SendEmailResponse {
 // ---------------------------------------------------------------------------
 function createSmtpTransporter() {
   return nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: Number(process.env.EMAIL_PORT) || 587,
+    host: env.EMAIL_HOST,
+    port: Number(env.EMAIL_PORT) || 587,
     // If EMAIL_PORT=465 we need secure:true; for 587 (STARTTLS) secure:false
-    secure: Number(process.env.EMAIL_PORT) === 465,
+    secure: Number(env.EMAIL_PORT) === 465,
     auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD,
+      user: env.EMAIL_USER,
+      pass: env.EMAIL_PASSWORD,
     },
   });
 }
@@ -40,9 +41,19 @@ async function sendViaSMTP(payload: SendEmailPayload): Promise<SendEmailResponse
     const info = await transporter.sendMail({
       from: typeof payload.from === "string" ? payload.from : String(payload.from),
       to: Array.isArray(payload.to) ? payload.to.join(", ") : payload.to,
+      replyTo: Array.isArray(payload.replyTo)
+        ? payload.replyTo.join(", ")
+        : payload.replyTo,
       subject: payload.subject,
       html: typeof payload.html === "string" ? payload.html : undefined,
       text: typeof payload.text === "string" ? payload.text : undefined,
+      attachments: payload.attachments?.map((attachment) => ({
+        filename: attachment.filename || undefined,
+        content: attachment.content,
+        path: attachment.path,
+        contentType: attachment.contentType,
+        cid: attachment.contentId,
+      })),
     });
     return { data: { id: info.messageId ?? "smtp_sent" }, error: null };
   } catch (err: unknown) {
@@ -117,9 +128,7 @@ export async function sendEmail(
   }
 
   // ── Route to the configured provider ──────────────────────────────────────
-  const provider = (process.env.EMAIL_PROVIDER ?? "resend").toLowerCase();
-
-  if (provider === "smtp") {
+  if (env.EMAIL_PROVIDER === "smtp") {
     return sendViaSMTP(payload);
   }
 

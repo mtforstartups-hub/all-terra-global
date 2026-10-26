@@ -13,7 +13,7 @@ import { env } from "@/env";
 
 // Database connection pool for MariaDB / MySQL
 export const connection = mysql.createPool({
-  uri: process.env.DATABASE_URL!,
+  uri: env.DATABASE_URL,
 });
 
 
@@ -37,8 +37,8 @@ export const auth = betterAuth({
     },
   },
   baseURL:
-    process.env.BETTER_AUTH_URL ||
-    process.env.NEXT_PUBLIC_APP_URL ||
+    env.BETTER_AUTH_URL ||
+    env.NEXT_PUBLIC_APP_URL ||
     "http://localhost:3000",
 
   emailAndPassword: {
