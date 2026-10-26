@@ -4,16 +4,13 @@ import { useState, useCallback } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ZoomIn,
-  ZoomOut,
-  Loader2,
-} from "lucide-react";
+import { ZoomIn, ZoomOut, Loader2 } from "lucide-react";
 
-// ✅ Fix 1: CDN worker — no webpack/Turbopack config needed
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+
+// import dynamic from 'next/dynamic'
+// // Server Component:
+// const ServerComponent = dynamic(() => import('../components/ServerComponent'))
 
 interface PDFViewerProps {
   src: string;
@@ -21,7 +18,6 @@ interface PDFViewerProps {
 
 export default function PDFViewer({ src }: PDFViewerProps) {
   const [numPages, setNumPages] = useState<number>(0);
-  //   const [pageNumber, setPageNumber] = useState(1);
   const [scale, setScale] = useState(1.0);
   const [isLoading, setIsLoading] = useState(true);
   const [containerWidth, setContainerWidth] = useState<number>(0);
