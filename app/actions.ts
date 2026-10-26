@@ -1,6 +1,7 @@
 "use server";
 import { z } from "zod";
 import { sendEmail } from "@/lib/send-email";
+import { escapeHtml } from "@/lib/email-templates";
 import { env } from "@/env";
 
 // ─── Schema ────────────────────────────────────────────────────────────────
@@ -20,6 +21,8 @@ const contactFormSchema = z.object({
 // ─── Email HTML builder ─────────────────────────────────────────────────────
 
 function buildEmailHtml(data: z.infer<typeof contactFormSchema>): string {
+  const email = escapeHtml(data.email);
+  const firstName = escapeHtml(data.name.split(" ")[0]);
   const row = (label: string, value?: string) =>
     value
       ? `
@@ -69,12 +72,12 @@ function buildEmailHtml(data: z.infer<typeof contactFormSchema>): string {
               <!-- Details table -->
               <table width="100%" cellpadding="0" cellspacing="0"
                 style="border:1px solid #e8e8e8;border-radius:12px;overflow:hidden;border-collapse:separate;">
-                ${row("Full Name", data.name)}
-                ${row("Company", data.company)}
-                ${row("Email", `<a href="mailto:${data.email}" style="color:#1C5244;text-decoration:none;">${data.email}</a>`)}
-                ${row("Phone", data.phone ? `<a href="tel:${data.phone}" style="color:#1C5244;text-decoration:none;">${data.phone}</a>` : undefined)}
-                ${row("Investment Interest", data.investment_interest)}
-                ${row("Investment Amount", data.amount)}
+                ${row("Full Name", escapeHtml(data.name))}
+                ${row("Company", data.company && escapeHtml(data.company))}
+                ${row("Email", `<a href="mailto:${email}" style="color:#1C5244;text-decoration:none;">${email}</a>`)}
+                ${row("Phone", data.phone ? `<a href="tel:${escapeHtml(data.phone)}" style="color:#1C5244;text-decoration:none;">${escapeHtml(data.phone)}</a>` : undefined)}
+                ${row("Investment Interest", escapeHtml(data.investment_interest))}
+                ${row("Investment Amount", data.amount && escapeHtml(data.amount))}
               </table>
 
               <!-- Message -->
@@ -83,7 +86,7 @@ function buildEmailHtml(data: z.infer<typeof contactFormSchema>): string {
                   ? `
               <div style="margin-top:24px;">
                 <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#1C5244;letter-spacing:0.5px;text-transform:uppercase;">Message</p>
-                <div style="background:#f8faf9;border:1px solid #e0ebe8;border-radius:10px;padding:16px 20px;font-size:14px;color:#444444;line-height:1.7;white-space:pre-wrap;">${data.message}</div>
+                <div style="background:#f8faf9;border:1px solid #e0ebe8;border-radius:10px;padding:16px 20px;font-size:14px;color:#444444;line-height:1.7;white-space:pre-wrap;">${escapeHtml(data.message)}</div>
               </div>`
                   : ""
               }
@@ -92,7 +95,7 @@ function buildEmailHtml(data: z.infer<typeof contactFormSchema>): string {
               <div style="margin-top:32px;text-align:center;">
                 <a href="mailto:${data.email}"
                   style="display:inline-block;background:#F8AB1D;color:#1C5244;font-weight:700;font-size:14px;padding:14px 32px;border-radius:50px;text-decoration:none;letter-spacing:0.3px;">
-                  Reply to ${data.name.split(" ")[0]}
+                  Reply to ${firstName}
                 </a>
               </div>
 

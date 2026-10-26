@@ -8,14 +8,11 @@ import SignaturePad from "./SignaturePad";
 export default function PDFSignForm({
   onPreviewReady,
   onSigned,
-  userEmail,
 }: {
   onPreviewReady: (uri: string) => void;
   onSigned?: () => void;
-  userEmail: string;
 }) {
-  const updateUserWithEmail = pdfSign.bind(null, userEmail);
-  const [state, formAction, isPending] = useActionState(updateUserWithEmail, {
+  const [state, formAction, isPending] = useActionState(pdfSign, {
     errors: {},
     message: null,
     success: false,

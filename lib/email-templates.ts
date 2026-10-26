@@ -4,8 +4,20 @@ const year = new Date().getFullYear();
 
 const LOGO_URL = "https://www.allterraglobal.com/logo-white.png";
 
+const HTML_ENTITIES: Record<string, string> = {
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': "&quot;",
+  "'": "&#39;",
+};
+
+/** User-supplied values must be escaped before going into an email body. */
+export const escapeHtml = (value: string) =>
+  value.replace(/[&<>"']/g, (char) => HTML_ENTITIES[char]);
+
 export const getVerificationEmailHtml = (name: string, url: string) => {
-  const firstName = name.split(" ")[0];
+  const firstName = escapeHtml(name.split(" ")[0]);
   return `
   <!DOCTYPE html>
   <html lang="en">
@@ -50,7 +62,7 @@ export const getVerificationEmailHtml = (name: string, url: string) => {
 };
 
 export const getResetPasswordEmailHtml = (name: string, url: string) => {
-  const firstName = name.split(" ")[0];
+  const firstName = escapeHtml(name.split(" ")[0]);
   return `
   <!DOCTYPE html>
   <html lang="en">
@@ -131,27 +143,27 @@ export const getAdminNotificationEmailHtml = (details: {
                 <table width="100%" cellpadding="12" cellspacing="0" style="border-collapse: collapse; background: #fafafa; border-radius: 12px; border: 1px solid #eeeeee;">
                   <tr style="border-bottom: 1px solid #eeeeee;">
                     <td width="35%" style="font-weight:700; color:#1C5244; font-size: 14px;">Full Name</td>
-                    <td width="65%" style="color:#333333; font-size: 14px;">${details.name}</td>
+                    <td width="65%" style="color:#333333; font-size: 14px;">${escapeHtml(details.name)}</td>
                   </tr>
                   <tr style="border-bottom: 1px solid #eeeeee;">
                     <td style="font-weight:700; color:#1C5244; font-size: 14px;">Email Address</td>
-                    <td style="color:#333333; font-size: 14px;"><a href="mailto:${details.email}" style="color:#F8AB1D;">${details.email}</a></td>
+                    <td style="color:#333333; font-size: 14px;"><a href="mailto:${escapeHtml(details.email)}" style="color:#F8AB1D;">${escapeHtml(details.email)}</a></td>
                   </tr>
                   <tr style="border-bottom: 1px solid #eeeeee;">
                     <td style="font-weight:700; color:#1C5244; font-size: 14px;">Company / Org</td>
-                    <td style="color:#333333; font-size: 14px;">${details.company || "<em>Not provided</em>"}</td>
+                    <td style="color:#333333; font-size: 14px;">${details.company ? escapeHtml(details.company) : "<em>Not provided</em>"}</td>
                   </tr>
                   <tr style="border-bottom: 1px solid #eeeeee;">
                     <td style="font-weight:700; color:#1C5244; font-size: 14px;">Phone Number</td>
-                    <td style="color:#333333; font-size: 14px;">${details.phone || "<em>Not provided</em>"}</td>
+                    <td style="color:#333333; font-size: 14px;">${details.phone ? escapeHtml(details.phone) : "<em>Not provided</em>"}</td>
                   </tr>
                   <tr style="border-bottom: 1px solid #eeeeee;">
                     <td style="font-weight:700; color:#1C5244; font-size: 14px;">Interest</td>
-                    <td style="color:#333333; font-size: 14px;">${details.investmentInterest || "<em>Not provided</em>"}</td>
+                    <td style="color:#333333; font-size: 14px;">${details.investmentInterest ? escapeHtml(details.investmentInterest) : "<em>Not provided</em>"}</td>
                   </tr>
                   <tr>
                     <td style="font-weight:700; color:#1C5244; font-size: 14px;">Amount</td>
-                    <td style="color:#333333; font-size: 14px;">${details.investmentAmount || "<em>Not provided</em>"}</td>
+                    <td style="color:#333333; font-size: 14px;">${details.investmentAmount ? escapeHtml(details.investmentAmount) : "<em>Not provided</em>"}</td>
                   </tr>
                 </table>
 
@@ -207,27 +219,27 @@ export const getOpportunityInterestEmailHtml = (details: {
                 <table width="100%" cellpadding="12" cellspacing="0" style="border-collapse: collapse; background: #fafafa; border-radius: 12px; border: 1px solid #eeeeee;">
                   <tr style="border-bottom: 1px solid #eeeeee;">
                     <td width="35%" style="font-weight:700; color:#1C5244; font-size: 14px;">User Name</td>
-                    <td width="65%" style="color:#333333; font-size: 14px;">${details.userName}</td>
+                    <td width="65%" style="color:#333333; font-size: 14px;">${escapeHtml(details.userName)}</td>
                   </tr>
                   <tr style="border-bottom: 1px solid #eeeeee;">
                     <td style="font-weight:700; color:#1C5244; font-size: 14px;">Email Address</td>
-                    <td style="color:#333333; font-size: 14px;"><a href="mailto:${details.userEmail}" style="color:#F8AB1D;">${details.userEmail}</a></td>
+                    <td style="color:#333333; font-size: 14px;"><a href="mailto:${escapeHtml(details.userEmail)}" style="color:#F8AB1D;">${escapeHtml(details.userEmail)}</a></td>
                   </tr>
                   <tr style="border-bottom: 1px solid #eeeeee;">
                     <td style="font-weight:700; color:#1C5244; font-size: 14px;">Phone</td>
-                    <td style="color:#333333; font-size: 14px;"><a href="tel:${details.phone}" style="color:#F8AB1D;">${details.phone}</a></td>
+                    <td style="color:#333333; font-size: 14px;"><a href="tel:${escapeHtml(details.phone)}" style="color:#F8AB1D;">${escapeHtml(details.phone)}</a></td>
                   </tr>
                   <tr>
                     <td style="font-weight:700; color:#1C5244; font-size: 14px;">Opportunity</td>
-                    <td style="color:#333333; font-size: 14px; font-weight: 600;">${details.opportunityTitle}</td>
+                    <td style="color:#333333; font-size: 14px; font-weight: 600;">${escapeHtml(details.opportunityTitle)}</td>
                   </tr>
                   <tr>
                     <td style="font-weight:700; color:#1C5244; font-size: 14px;">Sector</td>
-                    <td style="color:#333333; font-size: 14px; font-weight: 600;">${details.sector}</td>
+                    <td style="color:#333333; font-size: 14px; font-weight: 600;">${escapeHtml(details.sector)}</td>
                   </tr>
                   <tr>
                     <td style="font-weight:700; color:#1C5244; font-size: 14px;">Amount</td>
-                    <td style="color:#333333; font-size: 14px; font-weight: 600;">${details.amount}</td>
+                    <td style="color:#333333; font-size: 14px; font-weight: 600;">${escapeHtml(details.amount)}</td>
                   </tr>
                 </table>
 
@@ -251,7 +263,7 @@ export const getOpportunityInterestEmailHtml = (details: {
 };
 
 export const getNdaUserConfirmationEmailHtml = (name: string) => {
-  const firstName = name.split(" ")[0];
+  const firstName = escapeHtml(name.split(" ")[0]);
   return `
   <!DOCTYPE html>
   <html lang="en">
@@ -379,17 +391,17 @@ export const getNdaAdminNotificationEmailHtml = (details: {
                   style="border-collapse:collapse;background:#fafafa;border-radius:12px;border:1px solid #eeeeee;">
                   <tr style="border-bottom:1px solid #eeeeee;">
                     <td width="35%" style="font-weight:700;color:#1C5244;font-size:14px;">Full Name</td>
-                    <td width="65%" style="color:#333333;font-size:14px;">${details.name}</td>
+                    <td width="65%" style="color:#333333;font-size:14px;">${escapeHtml(details.name)}</td>
                   </tr>
                   <tr style="border-bottom:1px solid #eeeeee;">
                     <td style="font-weight:700;color:#1C5244;font-size:14px;">Email Address</td>
                     <td style="color:#333333;font-size:14px;">
-                      <a href="mailto:${details.email}" style="color:#F8AB1D;">${details.email}</a>
+                      <a href="mailto:${escapeHtml(details.email)}" style="color:#F8AB1D;">${escapeHtml(details.email)}</a>
                     </td>
                   </tr>
                   <tr style="border-bottom:1px solid #eeeeee;">
                     <td style="font-weight:700;color:#1C5244;font-size:14px;">Address</td>
-                    <td style="color:#333333;font-size:14px;">${details.address}</td>
+                    <td style="color:#333333;font-size:14px;">${escapeHtml(details.address)}</td>
                   </tr>
                   <tr>
                     <td style="font-weight:700;color:#1C5244;font-size:14px;">Signed At</td>

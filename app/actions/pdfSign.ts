@@ -15,6 +15,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import fontkit from "@pdf-lib/fontkit";
 import { env } from "@/env";
+import { requireUser } from "@/lib/session";
 
 const formSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters."),
@@ -186,10 +187,11 @@ async function sendNdaEmails(
 }
 
 export async function pdfSign(
-  userEmail: string,
   prevState: FormState,
   formData: FormData,
 ): Promise<FormState> {
+  // Identity always comes from the session — never from client-passed values.
+  const user = await requireUser();
   const rawData = Object.fromEntries(formData) as Record<string, string>;
 
   const result = formSchema.safeParse(rawData);
@@ -216,7 +218,7 @@ export async function pdfSign(
     const validatedData = result.data;
     const finalData = {
       ...validatedData,
-      email: userEmail,
+      email: user.email,
     };
     const { base64, dataUri } = await generateSignedPDF(validatedData);
 
@@ -235,8 +237,8 @@ export async function pdfSign(
     await sendNdaEmails(finalData, base64);
 
     await connection.execute(
-      "UPDATE user SET hasSignedNda = true WHERE email = ?",
-      [userEmail],
+      "UPDATE user SET hasSignedNda = true WHERE id = ?",
+      [user.id],
     );
     revalidatePath("/dashboard");
   } catch (error) {

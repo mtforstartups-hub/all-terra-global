@@ -137,7 +137,6 @@ export default function PDFViewerClient({ userEmail }: { userEmail: string }) {
             <PDFSignForm
               onPreviewReady={handlePreviewReady}
               onSigned={handleSigned}
-              userEmail={userEmail}
             />
             <p className="flex items-center gap-1.5 text-[11px] text-gray-300 mt-5">
               <Shield size={10} strokeWidth={2} />
@@ -250,7 +249,6 @@ export default function PDFViewerClient({ userEmail }: { userEmail: string }) {
             onSigned={() => {
               handleSigned();
             }}
-            userEmail={userEmail}
           />
         </div>
       </div>
