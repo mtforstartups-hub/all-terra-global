@@ -227,3 +227,13 @@ There is no automated test suite currently. When making changes:
 2. Test auth flows manually: register → email verify → sign in → dashboard access.
 3. Test NDA flow: new user without NDA sees the blur/modal; after signing, dashboard is accessible.
 4. For email: check the Ethereal preview URL printed to console in dev mode.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+## This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

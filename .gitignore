@@ -49,3 +49,5 @@ auth.db
 #Docusign
 private.key
 public.key
+
+.agents/

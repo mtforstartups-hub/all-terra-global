@@ -1,9 +1,33 @@
 import { test, expect } from "@playwright/test";
-import { deleteTestUser } from "../helpers/db";
+import {
+  assertLocalDatabase,
+  deleteTestUser,
+  userExists,
+  verifyUserEmail,
+} from "../helpers/db";
 import fs from "fs/promises";
 import path from "path";
 
-const TEST_EMAIL = `testuser-${Date.now()}@example.com`;
+// Real-mail mode: `bun run test:e2e:smtp` (sets E2E_REAL_EMAIL=true).
+// Emails are NOT intercepted - they leave over SMTP (EMAIL_PROVIDER=smtp) from
+// EMAIL_USER, with admin notices going to ADMIN_EMAIL. Verification is done by
+// flipping emailVerified in the local DB instead of parsing an inbox.
+const REAL_EMAIL = process.env.E2E_REAL_EMAIL === "true";
+
+function resolveRecipient(): string {
+  if (!REAL_EMAIL) return `testuser-${Date.now()}@example.com`;
+
+  const email = process.env.E2E_EMAIL?.trim() || process.env.EMAIL_USER?.trim();
+  if (!email) {
+    throw new Error(
+      "E2E_REAL_EMAIL=true requires E2E_EMAIL (or EMAIL_USER) in .env",
+    );
+  }
+  return email;
+}
+
+const TEST_EMAIL = resolveRecipient();
+const TEST_NAME = REAL_EMAIL ? "E2E Signup Test" : "Playwright Test User";
 const TEST_PASSWORD = "TestPassword123!";
 const LOG_FILE = path.join(process.cwd(), "test-emails.json");
 
@@ -51,6 +75,23 @@ async function waitForEmail(
 }
 
 test.beforeAll(async () => {
+  // Safety net: never create/delete rows outside the local dev database.
+  assertLocalDatabase();
+
+  if (REAL_EMAIL) {
+    if (process.env.EMAIL_PROVIDER !== "smtp") {
+      throw new Error(
+        "E2E_REAL_EMAIL=true expects EMAIL_PROVIDER=smtp in .env, otherwise Resend is used.",
+      );
+    }
+    if (await userExists(TEST_EMAIL)) {
+      throw new Error(
+        `${TEST_EMAIL} already exists in the local DB. Set E2E_EMAIL to a fresh address.`,
+      );
+    }
+    return;
+  }
+
   await deleteTestUser(TEST_EMAIL);
   // Clear the log file before tests
   try {
@@ -62,7 +103,6 @@ test.beforeAll(async () => {
 
 test.afterAll(async () => {
   await deleteTestUser(TEST_EMAIL);
-  // Optional: clear log file after test
 });
 
 test("Complete Signup Flow with Email Verification and NDA Sign", async ({
@@ -83,7 +123,7 @@ test("Complete Signup Flow with Email Verification and NDA Sign", async ({
     .filter({ hasText: "Confirm Password" });
   await registrationForm
     .locator('input[name="fullname"]')
-    .fill("Playwright Test User");
+    .fill(TEST_NAME);
   await registrationForm.locator('input[name="company"]').fill("Testing Inc");
   await registrationForm
     .locator(".phone-input-container input")
@@ -106,27 +146,36 @@ test("Complete Signup Flow with Email Verification and NDA Sign", async ({
   await expect(page.getByText("Verification Link Sent")).toBeVisible();
 
   // --- Step 2: Email Verification ---
-  // Wait for the verification email to hit our mock logger
-  const verificationEmail = await waitForEmail(
-    "Verify your All-Terra Global account",
-  );
+  // Mock mode: the message was intercepted into test-emails.json - read the link from there.
+  // Real mode: the message really went out over SMTP, so mark the user verified in the
+  // local DB instead of parsing an inbox (the link is also waiting in E2E_EMAIL's mailbox).
+  let verificationLink: string | null = null;
 
-  // Verify it was correctly identified as a test email
-  expect(verificationEmail._originalTo).toBe(TEST_EMAIL);
+  if (REAL_EMAIL) {
+    await verifyUserEmail(TEST_EMAIL);
+    console.log(`[e2e] Verification email sent via SMTP to ${TEST_EMAIL}`);
+  } else {
+    const verificationEmail = await waitForEmail(
+      "Verify your All-Terra Global account",
+    );
 
-  // Extract the verification link from the HTML body
-  // better-auth emails contain a link like: href="http://localhost:3000/api/auth/verify-email?token=..."
-  const urlMatch = verificationEmail.html.match(
-    /href="([^"]+verify-email\?token=[^"]+)"/,
-  );
-  expect(urlMatch).not.toBeNull();
-  const verificationLink = urlMatch![1];
+    // Verify it was correctly identified as a test email
+    expect(verificationEmail._originalTo).toBe(TEST_EMAIL);
 
-  // Navigate to the verification link
-  await page.goto(verificationLink);
+    // Extract the verification link from the HTML body
+    // better-auth emails contain a link like: href="http://localhost:3000/api/auth/verify-email?token=..."
+    const urlMatch = verificationEmail.html.match(
+      /href="([^"]+verify-email\?token=[^"]+)"/,
+    );
+    expect(urlMatch).not.toBeNull();
+    verificationLink = urlMatch![1];
+  }
 
-  // Wait for redirection after verification
-  await page.waitForURL("**/*", { timeout: 15000 });
+  // Navigate to the verification link (mock mode only)
+  if (verificationLink) {
+    await page.goto(verificationLink);
+    await page.waitForURL("**/*", { timeout: 15000 });
+  }
 
   if (!page.url().includes("/dashboard")) {
     // If not auto redirected, login
@@ -144,10 +193,16 @@ test("Complete Signup Flow with Email Verification and NDA Sign", async ({
   }
 
   // --- Step 3: Check Admin Notification ---
-  const adminNotification = await waitForEmail(
-    "New Registration: Playwright Test User",
-  );
-  expect(adminNotification._originalTo).toBeDefined();
+  if (REAL_EMAIL) {
+    console.log(
+      `[e2e] Admin notification should arrive at ${process.env.ADMIN_EMAIL}`,
+    );
+  } else {
+    const adminNotification = await waitForEmail(
+      `New Registration: ${TEST_NAME}`,
+    );
+    expect(adminNotification._originalTo).toBeDefined();
+  }
 
   // --- Step 4: NDA Interceptor ---
   // We need to wait for the header to re-render with the Dashboard link if we aren't already there
@@ -165,14 +220,14 @@ test("Complete Signup Flow with Email Verification and NDA Sign", async ({
   await page.waitForURL("**/sign-nda");
 
   const sidebar = page.locator("aside");
-  await sidebar.locator('input[name="fullName"]').fill("Playwright Test User");
+  await sidebar.locator('input[name="fullName"]').fill(TEST_NAME);
   await sidebar
     .locator('input[name="address"]')
     .fill("123 Test Ave, Testing City");
   await sidebar.getByRole("button", { name: "Type", exact: true }).click();
   await sidebar
     .locator('input[placeholder="Enter your full name"]')
-    .fill("Playwright Test User");
+    .fill(TEST_NAME);
   await sidebar.locator('button[value="preview"]').click();
 
   const signButton = sidebar.locator('button[value="sign"]');
@@ -181,22 +236,30 @@ test("Complete Signup Flow with Email Verification and NDA Sign", async ({
 
   // --- Step 6: Final Dashboard Access ---
   await page.waitForURL("**/dashboard**");
-  await expect(page.getByText("Playwright Test User").first()).toBeVisible({
+  await expect(page.getByText(TEST_NAME).first()).toBeVisible({
     timeout: 20000,
   });
   await expect(page.getByText("Verifying Signature")).toBeHidden();
 
   // --- Step 7: Check Signed Documents Emails ---
-  // User Confirmation
-  const userNdaEmail = await waitForEmail("Your Signed NDA – All-Terra Global");
-  expect(userNdaEmail._originalTo).toBe(TEST_EMAIL);
-  expect(userNdaEmail.attachments).toBeDefined();
-  expect(userNdaEmail.attachments?.[0].filename).toBe(
-    "NDA-AllTerraGlobal-Signed.pdf",
-  );
+  if (REAL_EMAIL) {
+    console.log(
+      `[e2e] Signed NDA email sent via SMTP to ${TEST_EMAIL}; admin copy to ${process.env.ADMIN_EMAIL}`,
+    );
+  } else {
+    // User Confirmation
+    const userNdaEmail = await waitForEmail(
+      "Your Signed NDA – All-Terra Global",
+    );
+    expect(userNdaEmail._originalTo).toBe(TEST_EMAIL);
+    expect(userNdaEmail.attachments).toBeDefined();
+    expect(userNdaEmail.attachments?.[0].filename).toBe(
+      "NDA-AllTerraGlobal-Signed.pdf",
+    );
 
-  // Admin Notification
-  const adminNdaEmail = await waitForEmail("NDA Signed – Playwright Test User");
-  expect(adminNdaEmail._originalTo).toBeDefined();
-  expect(adminNdaEmail.attachments).toBeDefined();
+    // Admin Notification
+    const adminNdaEmail = await waitForEmail(`NDA Signed – ${TEST_NAME}`);
+    expect(adminNdaEmail._originalTo).toBeDefined();
+    expect(adminNdaEmail.attachments).toBeDefined();
+  }
 });
