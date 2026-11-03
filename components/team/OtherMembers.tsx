@@ -11,22 +11,6 @@ gsap.registerPlugin(ScrollTrigger);
 
 const teamMembers = [
   {
-    name: "Vivek Modi",
-    title: "Director, India",
-    subtitle: "Finance & Strategy",
-    image: "/images/team/Vivek_Modi.jpeg",
-    bio: [
-      "Two decades+ experience across corporate finance, leadership, and governance.",
-      "Corporate finance strategy, banking relations, and compliance.",
-      "Capital structuring, project finance, and debt management driving sustainable performance.",
-    ],
-    sectors: [
-      "Banking & Financial Institutions",
-      "Corporate Finance & Governance",
-      "Strategic Performance",
-    ],
-  },
-  {
     name: "Jayesh Jesalpura",
     title: "Director, USA",
     subtitle: "Global Investor | Enterprise Transformation Leader",

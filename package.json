@@ -21,7 +21,8 @@
     "db:migrate": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --env-file=.env.production scripts/migrate.ts",
     "test:e2e": "playwright test",
     "test:e2e:smtp": "cross-env E2E_REAL_EMAIL=true playwright test tests/e2e/signup-full-flow.spec.ts",
-    "test:e2e:resend": "cross-env ENABLE_RESEND_TEST_API=true playwright test"
+    "test:e2e:resend": "cross-env ENABLE_RESEND_TEST_API=true playwright test",
+    "make:zip": "node scripts/make-deploy-zip.mjs"
   },
   "dependencies": {
     "@fontsource/dancing-script": "^5.2.8",

@@ -50,3 +50,5 @@ private.key
 public.key
 
 .agents/
+# archives
+*.zip

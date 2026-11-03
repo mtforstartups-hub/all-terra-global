@@ -1,5 +1,5 @@
 import { resend } from "./email-client";
-import nodemailer from "nodemailer";
+import nodemailer, { type SendMailOptions } from "nodemailer";
 import fs from "fs/promises";
 import path from "path";
 import { CreateEmailOptions } from "resend";
@@ -35,10 +35,22 @@ function createSmtpTransporter() {
   });
 }
 
+function toNodeBuffer(
+  content: string | Buffer | ArrayBuffer | Uint8Array | undefined,
+): string | Buffer | undefined {
+  if (!content) return undefined;
+  if (typeof content === "string" || Buffer.isBuffer(content)) return content;
+  if (content instanceof ArrayBuffer) return Buffer.from(content);
+  if (ArrayBuffer.isView(content)) {
+    return Buffer.from(content.buffer, content.byteOffset, content.byteLength);
+  }
+  return undefined;
+}
+
 async function sendViaSMTP(payload: SendEmailPayload): Promise<SendEmailResponse> {
   try {
     const transporter = createSmtpTransporter();
-    const info = await transporter.sendMail({
+    const mailOptions: SendMailOptions = {
       from: typeof payload.from === "string" ? payload.from : String(payload.from),
       to: Array.isArray(payload.to) ? payload.to.join(", ") : payload.to,
       replyTo: Array.isArray(payload.replyTo)
@@ -49,13 +61,18 @@ async function sendViaSMTP(payload: SendEmailPayload): Promise<SendEmailResponse
       text: typeof payload.text === "string" ? payload.text : undefined,
       attachments: payload.attachments?.map((attachment) => ({
         filename: attachment.filename || undefined,
-        content: attachment.content,
+        content: toNodeBuffer(attachment.content),
         path: attachment.path,
         contentType: attachment.contentType,
         cid: attachment.contentId,
       })),
-    });
-    return { data: { id: info.messageId ?? "smtp_sent" }, error: null };
+    };
+    const info = await transporter.sendMail(mailOptions);
+    const messageId =
+      info && typeof info === "object" && "messageId" in info && typeof (info as { messageId?: unknown }).messageId === "string"
+        ? (info as { messageId: string }).messageId
+        : "smtp_sent";
+    return { data: { id: messageId }, error: null };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     console.error("[SMTP] Failed to send email:", message);
@@ -127,11 +144,27 @@ export async function sendEmail(
     };
   }
 
+  const recipient = Array.isArray(payload.to) ? payload.to.join(", ") : payload.to;
+
   // ── Route to the configured provider ──────────────────────────────────────
   if (env.EMAIL_PROVIDER === "smtp") {
-    return sendViaSMTP(payload);
+    console.log(`[Email] Dispatching via SMTP (${env.EMAIL_HOST}:${env.EMAIL_PORT}) to: ${recipient} | Subject: "${payload.subject}"`);
+    const response = await sendViaSMTP(payload);
+    if (response.error) {
+      console.error(`[Email: SMTP] ❌ Failed to send email to ${recipient}:`, response.error.message);
+    } else {
+      console.log(`[Email: SMTP] ✅ Successfully sent email to ${recipient} (id: ${response.data?.id})`);
+    }
+    return response;
   }
 
   // Default: Resend
-  return resend.emails.send(payload);
+  console.log(`[Email] Dispatching via Resend to: ${recipient} | Subject: "${payload.subject}"`);
+  const response = await resend.emails.send(payload);
+  if (response.error) {
+    console.error(`[Email: Resend] ❌ Failed to send email to ${recipient}:`, response.error.message);
+  } else {
+    console.log(`[Email: Resend] ✅ Successfully sent email to ${recipient} (id: ${response.data?.id})`);
+  }
+  return response;
 }

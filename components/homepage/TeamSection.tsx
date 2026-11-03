@@ -23,12 +23,7 @@ const teamMembers: TeamMember[] = [
     subtitle: "Global Investor & Tech-Finance Strategist",
     image: "/images/team/Rahul_Jain.jpeg",
   },
-  {
-    name: "Vivek Modi",
-    title: "Director, India",
-    subtitle: "Finance & Strategy",
-    image: "/images/team/Vivek_Modi.jpeg",
-  },
+
   {
     name: "Jayesh Jesalpura",
     title: "Director, USA",
@@ -47,18 +42,6 @@ const teamMembers: TeamMember[] = [
     subtitle: "Local Operations & Strategic Support",
     image: "/images/team/Michael_Masimba.jpeg",
   },
-  // {
-  //     name: "Simbarashe Jerahuni",
-  //     title: "Director",
-  //     subtitle: "",
-  //     image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&q=80",
-  // },
-  // {
-  //     name: "Vivek Modi",
-  //     title: "Director, India",
-  //     subtitle: "",
-  //     image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80",
-  // },
 ];
 
 export default function TeamSection() {
