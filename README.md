@@ -48,9 +48,22 @@ bun run build
 
 # Start production server
 bun start
+
+# deploy (runs on the Plesk server, not locally)
+# see DEPLOYMENT.md
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to view the site.
+
+## Deployment
+
+Hosted on **Plesk** as a Node.js app. Builds run on the server — not locally, and not in CI.
+
+- Plesk Node.js settings: startup file `server.js`, Node.js 22, application mode `production`.
+- Deploy: `npm run plesk:deploy` on the server (Plesk Git deploy action or **Run script**), then restart the app.
+- All env vars must be set in Plesk **before** the first build.
+
+Full runbook: [DEPLOYMENT.md](./DEPLOYMENT.md).
 
 ## Pages
 

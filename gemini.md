@@ -220,11 +220,14 @@ The `better-auth` config marks `investmentAmount` as `required: true`. The sign-
 
 ---
 
-## Vercel / Deployment Notes
+## Plesk / Deployment Notes
 
-- `@vercel/functions` is a dependency — `waitUntil()` is used for non-blocking email sends.
-- `NEXT_PUBLIC_BASE_URL` and `BETTER_AUTH_URL` must be set to the deployed URL in production env vars.
-- `DATABASE_URL` must point to a MySQL/MariaDB instance accessible from Vercel's Node.js/serverless functions.
+- Hosted as a Plesk Node.js app (Phusion Passenger). `next build` runs on the server only — see `DEPLOYMENT.md`.
+- Passenger boots `server.js`, which starts Next.js on `process.env.PORT`.
+- Set every env var in Plesk before building — `env.ts` throws at import, so a missing variable breaks the build.
+- `NEXT_PUBLIC_BASE_URL` and `BETTER_AUTH_URL` must be set to the public production URL (auth links, cookies).
+- `DATABASE_URL` must point to the MySQL/MariaDB instance reachable from the server; tables are created by `scripts/migrate.ts`, not by the build.
+- Node.js ≥ 20.9 required (22 recommended); the server build uses npm, local development uses bun.
 - Keep DB-backed routes and server actions on the Node.js runtime.
 
 ---

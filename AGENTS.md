@@ -25,7 +25,7 @@
 | Validation  | Zod v4                                                       |
 | PDF         | `pdf-lib`, `pdfjs-dist`, `react-pdf`                         |
 | Icons       | Lucide React                                                 |
-| Package Mgr | Bun (`bun.lock` present — use `bun` not `npm`)               |
+| Package Mgr | Bun locally (`bun.lock`); npm on the Plesk server (`package-lock.json`) |
 
 ---
 
@@ -93,7 +93,10 @@ all-terra-global/
 │   ├── migrate.ts              # Run once to create DB tables
 │   └── clear-users.ts
 ├── public/                     # Static assets
-└── env.ts                      # Validated environment variable access
+├── env.ts                      # Validated environment variable access
+├── server.js                   # Passenger startup file used by Plesk (production only)
+├── DEPLOYMENT.md               # Plesk deployment runbook
+└── package-lock.json           # Lockfile used for server-side builds (npm)
 ```
 
 ---
@@ -199,16 +202,23 @@ ADMIN_EMAIL             # Receives new-user notifications
 
 ```bash
 bun dev            # Start dev server (http://localhost:3000)
-bun build          # Production build
+bun build          # Local sanity build (not part of deployment)
 bun lint           # ESLint
 bun run scripts/migrate.ts   # Run DB migration (once per environment setup)
+```
+
+Production builds run **on the Plesk server** with npm — see `DEPLOYMENT.md`:
+
+```bash
+npm run plesk:deploy   # install (with dev deps) → clean .next → next build
+npm run start          # node server.js (Passenger startup file)
 ```
 
 ---
 
 ## What NOT to Do
 
-- ❌ Do **not** switch from `bun` to `npm` or `yarn`.
+- ❌ Do **not** switch from `bun` to `npm` or `yarn` **for local development**. The Plesk server build is the one exception: it uses npm because bun is not available there.
 - ❌ Do **not** replace `better-auth` with NextAuth/Clerk/Auth.js.
 - ❌ Do **not** introduce an ORM (Prisma/Drizzle/etc.).
 - ❌ Do **not** add `react-query` or `zustand` selectors for server data — use RSC.
@@ -216,6 +226,17 @@ bun run scripts/migrate.ts   # Run DB migration (once per environment setup)
 - ❌ Do **not** hardcode company email addresses — always read from `process.env`.
 - ❌ Do **not** commit `.env` or private keys — both are in `.gitignore`.
 - ❌ Do **not** add versioned component duplicates (e.g. `ComponentV5.tsx`) — refactor or replace in place.
+
+---
+
+## Deployment
+
+- Hosted on **Plesk** (Node.js extension → Phusion Passenger). There is no Vercel, no CI build, and no committed build output.
+- Production builds run **on the server**: `npm run plesk:deploy` (install with dev deps → clean `.next` → `next build`), triggered by a Plesk Git deploy action or the Node.js "Run script" button.
+- Passenger boots `server.js`, which starts Next.js in production mode on `process.env.PORT`.
+- Environment variables must be set in Plesk **before the first build** — `env.ts` validates at import time, so a missing variable fails the build, not just runtime.
+- Requires Node.js ≥ 20.9 (22 recommended) and ~1.5–2 GB free RAM during the build.
+- Full runbook: `DEPLOYMENT.md`.
 
 ---
 
