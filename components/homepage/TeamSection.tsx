@@ -201,7 +201,7 @@ export default function TeamSection() {
 
       {/* Desktop: Static Grid */}
       {!isMobile && (
-        <div className="hidden lg:grid grid-cols-5 gap-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="hidden lg:grid grid-cols-4 gap-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {teamMembers.map((member, index) => (
             <TeamCard
               key={member.name}

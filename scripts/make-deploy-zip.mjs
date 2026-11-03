@@ -39,6 +39,7 @@ const NEVER_INCLUDE = [
   ".env.test",
   "private.key",
   "auth.db",
+  "app.log",
 ];
 
 console.log("🚀 Preparing Plesk deployment package...\n");
@@ -62,7 +63,12 @@ function copyDirectory(src, dest) {
     const srcPath = path.join(src, entry.name);
     const destPath = path.join(dest, entry.name);
 
-    if (entry.name === "node_modules" || entry.name === ".next" || entry.name.endsWith(".zip")) {
+    if (
+      entry.name === "node_modules" ||
+      entry.name === ".next" ||
+      entry.name.endsWith(".zip") ||
+      entry.name.endsWith(".log")
+    ) {
       continue;
     }
 

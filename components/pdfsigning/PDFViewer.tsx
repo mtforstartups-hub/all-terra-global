@@ -6,11 +6,9 @@ import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import { ZoomIn, ZoomOut, Loader2 } from "lucide-react";
 
-pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
-
-// import dynamic from 'next/dynamic'
-// // Server Component:
-// const ServerComponent = dynamic(() => import('../components/ServerComponent'))
+// Use .js extension because Nginx on Plesk serves .mjs as 'text/plain',
+// which causes browsers to reject the dynamic ES module worker import.
+pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
 interface PDFViewerProps {
   src: string;
@@ -42,25 +40,7 @@ export default function PDFViewer({ src }: PDFViewerProps) {
     <div className="flex flex-col h-full bg-[#1a1f1e]">
       {/* Toolbar */}
       <div className="shrink-0 flex items-center justify-between px-3 py-2 bg-[#111514] border-b border-white/10">
-        <div className="flex items-center gap-1">
-          {/* <button
-            onClick={() => setPageNumber((p) => Math.max(1, p - 1))}
-            disabled={pageNumber <= 1}
-            className="w-7 h-7 rounded-md flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-          >
-            <ChevronLeft size={15} strokeWidth={2.5} />
-          </button>
-          <span className="text-[12px] text-white/50 px-1 tabular-nums">
-            {isLoading ? "—" : `${pageNumber} / ${numPages}`}
-          </span>
-          <button
-            onClick={() => setPageNumber((p) => Math.min(numPages, p + 1))}
-            disabled={pageNumber >= numPages}
-            className="w-7 h-7 rounded-md flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-          >
-            <ChevronRight size={15} strokeWidth={2.5} />
-          </button> */}
-        </div>
+        <div className="flex items-center gap-1"></div>
 
         <div className="flex items-center gap-1">
           <button
@@ -117,21 +97,6 @@ export default function PDFViewer({ src }: PDFViewerProps) {
             />
           ))}
         </Document>
-        {/* <Document
-          file={pdfFile}
-          onLoadSuccess={onDocumentLoadSuccess}
-          loading=""
-          className="flex flex-col items-center py-4"
-        >
-          <Page
-            key={`page_${pageNumber}`}
-            pageNumber={pageNumber}
-            width={pageWidth}
-            renderTextLayer={true}
-            renderAnnotationLayer={false}
-            className="shadow-2xl shadow-black/50"
-          />
-        </Document> */}
       </div>
     </div>
   );
