@@ -227,7 +227,7 @@ The `better-auth` config marks `investmentAmount` as `required: true`. The sign-
 - Set every env var in Plesk before building — `env.ts` throws at import, so a missing variable breaks the build.
 - `NEXT_PUBLIC_BASE_URL` and `BETTER_AUTH_URL` must be set to the public production URL (auth links, cookies).
 - `DATABASE_URL` must point to the MySQL/MariaDB instance reachable from the server; tables are created by `scripts/migrate.ts`, not by the build.
-- Node.js ≥ 20.9 required (22 recommended); the server build uses npm, local development uses bun.
+- Node.js ≥ 20.9 required (24 recommended); the server build uses npm, local development uses bun.
 - Keep DB-backed routes and server actions on the Node.js runtime.
 
 ---

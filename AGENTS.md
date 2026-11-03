@@ -211,6 +211,7 @@ Production builds run **on the Plesk server** with npm — see `DEPLOYMENT.md`:
 
 ```bash
 npm run plesk:deploy   # install (with dev deps) → clean .next → next build
+npm run db:migrate     # create DB tables from .env.production (first deploy / new DB)
 npm run start          # node server.js (Passenger startup file)
 ```
 
@@ -235,7 +236,7 @@ npm run start          # node server.js (Passenger startup file)
 - Production builds run **on the server**: `npm run plesk:deploy` (install with dev deps → clean `.next` → `next build`), triggered by a Plesk Git deploy action or the Node.js "Run script" button.
 - Passenger boots `server.js`, which starts Next.js in production mode on `process.env.PORT`.
 - Environment variables must be set in Plesk **before the first build** — `env.ts` validates at import time, so a missing variable fails the build, not just runtime.
-- Requires Node.js ≥ 20.9 (22 recommended) and ~1.5–2 GB free RAM during the build.
+- Requires Node.js ≥ 20.9 (24 recommended) and ~1.5–2 GB free RAM during the build.
 - Full runbook: `DEPLOYMENT.md`.
 
 ---

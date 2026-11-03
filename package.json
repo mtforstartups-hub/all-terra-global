@@ -18,6 +18,7 @@
     "plesk:nuke": "node -e \"require('fs').rmSync('node_modules',{recursive:true,force:true})\"",
     "plesk:build": "npm run build",
     "plesk:deploy": "npm run plesk:install && npm run plesk:clean && npm run plesk:build",
+    "db:migrate": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --env-file=.env.production scripts/migrate.ts",
     "test:e2e": "playwright test",
     "test:e2e:smtp": "cross-env E2E_REAL_EMAIL=true playwright test tests/e2e/signup-full-flow.spec.ts",
     "test:e2e:resend": "cross-env ENABLE_RESEND_TEST_API=true playwright test"
