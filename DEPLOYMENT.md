@@ -30,13 +30,21 @@ starts Next.js on the port Plesk provides.
 The repo pins the shell version via `.node-version` (`24`) so nodenv resolves `npm` for
 deploy actions and "Run script".
 
-**Custom environment variables** — add every variable listed in `env.ts` / `AGENTS.md`:
-`DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `NEXT_PUBLIC_APP_URL`,
-`NEXT_PUBLIC_BASE_URL`, `ADMIN_EMAIL`, `EMAIL_USER`, `EMAIL_PROVIDER`, `RESEND_API_KEY`
-(`EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_PASSWORD` when `EMAIL_PROVIDER=smtp`).
+**Environment variables belong in `.env.production` only** — not in the panel as well. The
+Node.js tab's "Custom environment variables" reach **only the running app** and *override*
+the file at runtime, while the build reads *only* the file. Duplicating them is how you get a
+build that succeeds and a site that returns 500. If you do set them in the panel, the values
+must be byte-identical, with the DB password percent-encoded.
 
-`BETTER_AUTH_URL` / `NEXT_PUBLIC_BASE_URL` must be the public `https://` URL — auth links
-and cookies are generated from them.
+Variables: `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `NEXT_PUBLIC_APP_URL`,
+`NEXT_PUBLIC_BASE_URL`, `ADMIN_EMAIL`, `EMAIL_USER`, `EMAIL_PROVIDER`, `RESEND_API_KEY`
+(`EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_PASSWORD` when `EMAIL_PROVIDER=smtp`). Start from
+`.env.production.example`.
+
+`BETTER_AUTH_URL`, `NEXT_PUBLIC_APP_URL` and `NEXT_PUBLIC_BASE_URL` must all be the public
+`https://` URL — auth links, cookies and client-side auth calls are generated from them.
+`NEXT_PUBLIC_*` values are **inlined at build time**, so changing them requires a rebuild,
+not just a restart.
 
 ## 2. Deploying
 
@@ -126,6 +134,7 @@ It reads `DATABASE_URL` from `.env.production`, creates `user`, `session`, `acco
 | `nodenv: npm: command not found` / `The 'npm' command exists in these Node versions` | no Node version selected for the deploy shell | commit `.node-version`, or `export NODENV_VERSION=24 && npm run plesk:deploy` |
 | `❌ Invalid environment variables` | the build shell has no env vars | create `.env.production` in the application root |
 | `URIError: URI malformed` at `lib/auth.ts` | raw `%` (or other reserved char) in `DATABASE_URL` | percent-encode the password |
+| Build succeeds but pages 500 with `URIError` | a **Plesk custom env var** overrides `.env.production` with an unencoded value | delete the panel copy, or make it match the file exactly |
 | `ER_ACCESS_DENIED_ERROR` / `Access denied for user` | wrong user, password or encoding in `DATABASE_URL` | see below, then `npm run db:migrate` |
 | `Could not validate the database schema` (build log) | tables missing (fresh DB) — non-fatal warning | `npm run db:migrate` |
 | `npm warn install-scripts unrs-resolver` | npm skipped an ESLint-only helper's install script | ignore, or `npm install-scripts approve unrs-resolver` |
