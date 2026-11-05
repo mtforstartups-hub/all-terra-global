@@ -37,12 +37,19 @@ function createSmtpTransporter() {
 
 function toNodeBuffer(
   content: string | Buffer | ArrayBuffer | Uint8Array | undefined,
+  encoding?: string,
 ): string | Buffer | undefined {
   if (!content) return undefined;
-  if (typeof content === "string" || Buffer.isBuffer(content)) return content;
+  if (Buffer.isBuffer(content)) return content;
   if (content instanceof ArrayBuffer) return Buffer.from(content);
   if (ArrayBuffer.isView(content)) {
     return Buffer.from(content.buffer, content.byteOffset, content.byteLength);
+  }
+  if (typeof content === "string") {
+    if (encoding === "base64" || content.startsWith("JVBERi0")) {
+      return Buffer.from(content, "base64");
+    }
+    return content;
   }
   return undefined;
 }
@@ -59,13 +66,23 @@ async function sendViaSMTP(payload: SendEmailPayload): Promise<SendEmailResponse
       subject: payload.subject,
       html: typeof payload.html === "string" ? payload.html : undefined,
       text: typeof payload.text === "string" ? payload.text : undefined,
-      attachments: payload.attachments?.map((attachment) => ({
-        filename: attachment.filename || undefined,
-        content: toNodeBuffer(attachment.content),
-        path: attachment.path,
-        contentType: attachment.contentType,
-        cid: attachment.contentId,
-      })),
+      attachments: payload.attachments?.map((attachment) => {
+        const raw = attachment as Record<string, unknown>;
+        const encoding =
+          typeof raw.encoding === "string" ? raw.encoding : undefined;
+        const normalizedContent = toNodeBuffer(attachment.content, encoding);
+
+        return {
+          filename: attachment.filename || undefined,
+          content: normalizedContent,
+          path: attachment.path,
+          contentType: attachment.contentType,
+          cid: attachment.contentId,
+          ...(encoding && !Buffer.isBuffer(normalizedContent)
+            ? { encoding }
+            : {}),
+        };
+      }),
     };
     const info = await transporter.sendMail(mailOptions);
     const messageId =

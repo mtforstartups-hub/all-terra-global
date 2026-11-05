@@ -54,3 +54,6 @@ public.key
 .agents/
 # archives
 *.zip
+
+# temporary signed pdf outputs
+temp-signed-pdfs/

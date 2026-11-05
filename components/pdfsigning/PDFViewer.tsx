@@ -8,7 +8,10 @@ import { ZoomIn, ZoomOut, Loader2 } from "lucide-react";
 
 // Use .js extension because Nginx on Plesk serves .mjs as 'text/plain',
 // which causes browsers to reject the dynamic ES module worker import.
-pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  "pdfjs-dist/build/pdf.worker.min.mjs",
+  import.meta.url,
+).toString();
 
 interface PDFViewerProps {
   src: string;

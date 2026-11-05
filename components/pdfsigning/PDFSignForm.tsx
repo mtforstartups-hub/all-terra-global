@@ -25,7 +25,13 @@ export default function PDFSignForm({
       onPreviewReady(state.pdfUri);
       if (state.data?.intent === "sign" && onSigned) onSigned();
     }
-  }, [state.pdfUri, state.success]);
+  }, [
+    onPreviewReady,
+    onSigned,
+    state.data?.intent,
+    state.pdfUri,
+    state.success,
+  ]);
 
   return (
     <form action={formAction} className="flex flex-col gap-0">

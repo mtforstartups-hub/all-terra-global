@@ -2,7 +2,7 @@
 
 import "dotenv/config";
 import { z } from "zod";
-import { grayscale, PDFDocument, rgb } from "pdf-lib";
+import { PDFDocument } from "pdf-lib";
 import fs from "fs/promises";
 import path from "path";
 import { connection } from "@/lib/auth";
@@ -158,8 +158,8 @@ async function sendNdaEmails(
 
   const pdfAttachment = {
     filename: "NDA-AllTerraGlobal-Signed.pdf",
-    content: pdfBase64,
-    encoding: "base64" as const,
+    content: Buffer.from(pdfBase64, "base64"),
+
     contentType: "application/pdf",
   };
 
