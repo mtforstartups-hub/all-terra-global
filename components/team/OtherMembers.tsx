@@ -23,6 +23,22 @@ const teamMembers = [
     sectors: ["Enterprise Transformation", "Investments & M&A", "Real Estate"],
   },
   {
+    name: "Vinayak Malkotagi",
+    title: "Director, UAE",
+    subtitle: "Global Trading & Supply Chain Strategist",
+    image: "/images/team/Vinayak_Malkotagi.jpeg",
+    bio: [
+      "Founder and CEO of Great Swastik General Trading Co. LLC (Dubai, UAE), directing international trade and global distribution.",
+      "Extensive expertise in global product sourcing, procurement, quality assurance, and cross-border supply chain logistics.",
+      "Drives strategic retail consultancy, market expansion, and sustainable international commercial partnerships.",
+    ],
+    sectors: [
+      "Global Trading & Sourcing",
+      "Supply Chain & Logistics",
+      "Retail Consultancy",
+    ],
+  },
+  {
     name: "Abhishek Jain",
     title: "Manager, India",
     subtitle: "Startup Investments & Deal Execution",

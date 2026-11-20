@@ -17,6 +17,14 @@ const directors = [
     expertise: "International Finance",
     bio: "Extensive experience in cross-border investment structures and US-Africa capital flows",
   },
+  {
+    name: "Vinayak Malkotagi",
+    title: "Director",
+    location: "UAE",
+    image: "/images/team/Vinayak_Malkotagi.jpeg",
+    expertise: "Global Trading & Supply Chain",
+    bio: "Extensive experience in international trade, global procurement, and cross-border logistics",
+  },
 ];
 
 export default function Directors() {

@@ -23,7 +23,6 @@ const teamMembers: TeamMember[] = [
     subtitle: "Global Investor & Tech-Finance Strategist",
     image: "/images/team/Rahul_Jain.jpeg",
   },
-
   {
     name: "Jayesh Jesalpura",
     title: "Director, USA",
@@ -31,9 +30,15 @@ const teamMembers: TeamMember[] = [
     image: "/images/team/Jayesh_Jesalpura.jpeg",
   },
   {
+    name: "Vinayak Malkotagi",
+    title: "Director, UAE",
+    subtitle: "Global Trading & Supply Chain Strategist",
+    image: "/images/team/Vinayak_Malkotagi.jpeg",
+  },
+  {
     name: "Abhishek Jain",
     title: "Manager, India",
-    subtitle: "",
+    subtitle: "Startup Investments & Deal Execution",
     image: "/images/team/Abhishek_Jain.jpeg",
   },
   {
@@ -201,7 +206,7 @@ export default function TeamSection() {
 
       {/* Desktop: Static Grid */}
       {!isMobile && (
-        <div className="hidden lg:grid grid-cols-4 gap-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="hidden lg:grid grid-cols-5 gap-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {teamMembers.map((member, index) => (
             <TeamCard
               key={member.name}
